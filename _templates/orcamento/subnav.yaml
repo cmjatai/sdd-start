@@ -1,0 +1,25 @@
+{% load i18n common_tags %}
+- title: {% trans 'Orçamento' %}
+  url: orcamento_view
+- title: {% trans 'Despesas' %}
+  url: despesa_list
+- title: {% trans 'Órgãos' %}
+  url: orgao_list
+- title: {% trans 'Unidades' %}
+  url: unidade_list
+- title: {% trans 'Funções' %}
+  url: funcao_list
+- title: {% trans 'Subfunções' %}
+  url: subfuncao_list
+- title: {% trans 'Programas' %}
+  url: programa_list
+- title: {% trans 'Ações' %}
+  url: acao_list
+- title: {% trans 'Naturezas das Despesas' %}
+  url: naturezadadespesa_list
+- title: {% trans 'Fontes' %}
+  url: fonte_list
+{% if perms.orcamento.change_etapadorcamento %}
+- title: {% trans 'Etapas' %}
+  url: etapaorcamento_list
+{% endif %}

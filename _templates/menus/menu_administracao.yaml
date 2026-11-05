@@ -1,0 +1,73 @@
+{% load i18n common_tags %}
+{% comment %}
+- title: teste
+  url: teste
+  css_class_icon: teste
+  css_class_ul: teste
+  css_class_li: teste
+  css_class_a: teste
+  css_class_span: teste
+  check_permission: teste
+{% endcomment%}
+- title: ' '
+  url: '#'
+  css_class_ul: right
+  css_class_icon: fa-solid fa-gears
+  css_class_a: dropdown-toggle
+  children:
+  - title: {% trans 'Configurações Gerais' %}
+    css_class_li: head_title
+    css_class_icon: fa-solid fa-gear
+    url: ''
+    children:
+    - title: {% trans 'Casa Legislativa' %}
+      url: backend.utils:casalegislativa_list
+      css_class_icon: fa-solid fa-building-columns
+    - title: ''
+      url: ''
+    - title: {% trans 'Legislaturas' %}
+      url: backend.utils:legislatura_list
+      css_class_icon: fa-solid fa-gavel
+    - title: {% trans 'Partidos' %}
+      url: backend.utils:partido_list
+      css_class_icon: fa-solid fa-flag
+    - title: {% trans 'Parlamentares' %}
+      url: backend.utils:parlamentar_list
+      css_class_icon: fa-solid fa-user
+    - title: ''
+      url: ''
+    - title: {% trans 'Entidades' %}
+      url: backend.utils:entidade_list
+      css_class_icon: fa-solid fa-building
+  - title: {% trans 'Manutenção de Repositórios' %}
+    css_class_li: head_title
+    css_class_icon: fa-solid fa-file-zipper
+    check_permission: menu_administracao
+    children:
+    - title: {% trans 'Repositórios de Dados Externos' %}
+      url: backend.etl:rawdata_list
+      css_class_icon: fa-solid fa-file-zipper
+    - title: {% trans 'Layouts de Importação' %}
+      url: backend.etl:layout_list
+      css_class_icon: bi bi-layout-wtf
+  - title: {% trans 'Manutenção de Usuários' %}
+    css_class_li: head_title
+    css_class_icon: fa-solid fa-users-gear
+    check_permission: menu_administracao
+    children:
+    - title: {% trans 'Usuários' %}
+      url: backend.eauth:user_list
+      css_class_icon: fa-solid fa-user
+    - title: {% trans 'Auditoria de Acessos' %}
+      url: backend.eauth:pesquisar_auditlog
+      css_class_icon: fa-solid fa-building-shield
+{% if user.is_superuser %}
+  - title: {% trans 'Testes' %}
+    css_class_li: head_title
+    check_permission: menu_administracao
+    children:
+    - title: Testes
+      url: /teste/
+    - title: Test WS
+      url: /wstest/
+{% endif %}

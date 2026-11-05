@@ -1,0 +1,13 @@
+{% extends 'crud/detail.html' %}
+{% block json_content %}
+  {{ object.jdata|json_script:object.versao }}
+{% endblock json_content %}
+
+{% block table_content %}
+<div class="row">
+  <div class="col-12 p-3">
+    <h3 class="text-left">Layout JDATA</h3>
+    <emf-json-viewer :objectid="{{object.id}}" :identify="'{{ object.versao }}'"></emf-json-viewer>
+  </div>
+</div>
+{% endblock table_content%}

@@ -1,0 +1,7 @@
+{% load i18n %}
+- title: {% trans 'Parlamentar' %}
+  url: backend.utils:parlamentar_view
+- title: {% trans 'Filiações Partidárias' %}
+  url: backend.utils:filiacao_list
+- title: {% trans 'Mandatos' %}
+  url: backend.utils:mandato_list

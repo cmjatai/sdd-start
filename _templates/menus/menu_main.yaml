@@ -1,0 +1,18 @@
+{% load i18n common_tags %}
+{% comment %}
+- title: teste
+  url: teste
+  css_class_icon: teste
+  css_class_li: teste
+  css_class_a: teste
+  css_class_span: teste
+  check_permission: teste
+{% endcomment%}
+- title: {% trans 'INÍCIO' %}
+  url: '/'
+- title: {% trans 'PARLAMENTARES' %}
+  url: 'backend.utils:parlamentar_list'
+- title: {% trans 'BANCADAS' %}
+  url: 'backend.utils:bancada_list'
+- title: {% trans 'ORÇAMENTO' %}
+  url: 'backend.orcamento:orcamento_list'

@@ -1,0 +1,38 @@
+{% load i18n  static %}
+
+<div class="container-login">
+  <form id="login-form" method="post" action="/login" enctype="multipart/form-data">
+    <h1>{% trans "Acesso ao Sdd-Start" %}</h1>
+    <div class="inner">
+      {% csrf_token %}
+
+
+      {% if form.errors %}
+        <div class="alert alert-danger">Usuário e/ou Senha inválidos.
+        </div>
+      {% endif %}
+
+      <div class="box-entry">
+        <h4>Entre com seu usuário e senha</h4>
+        <div class="input-icon input_username">
+            <span class="fa fa-user fa-2x "></span>
+            {{ form.username }}
+        </div>
+        <div class="input-icon input_password">
+            <span class="fa fa-key fa-2x "></span>
+            {{ form.password }}
+        </div>
+        <div class="row-recovery">
+          <a class="btn btn-link btn-recovery" href="{% url 'backend.eauth:recuperar_senha_email' %}" />{% trans "Esqueci minha Senha" %}</a>
+        </div>
+
+        <div class="btns-login">
+          <button class="btn-login" type="submit" value="login" />{% trans "ENTRAR" %}</button>
+        </div>
+      </div>
+
+      <input  type="hidden" name="next" value="{{ next }}" />
+
+    </div>
+  </form>
+</div>

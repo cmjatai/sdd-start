@@ -1,0 +1,12 @@
+{% extends "crud/list.html" %}
+{% load common_tags %}
+
+{% block container-info-table %}
+<div class="container-info-table">
+    {{ block.super }}
+    <div>
+        <strong>Totalização sobre o Filtro Aplicado</strong>
+        <h1 class="totalize">{{ totalize_despesas|decimal2str }}</h1>
+    </div>
+</div>
+{% endblock container-info-table %}

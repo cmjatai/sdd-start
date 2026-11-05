@@ -1,0 +1,6 @@
+{% load i18n static cropping%}
+{% if user_render.avatar %}
+  <img class="{{ css_class }}" src="{% cropped_thumbnail user_render 'avatar_cropping' %}">
+{% else %}
+  <svg class="{{ css_class }}" title="{{user_render}}"><use href="#svg-perfil"></use></svg>
+{% endif %}

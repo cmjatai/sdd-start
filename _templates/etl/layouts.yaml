@@ -1,0 +1,28 @@
+{% load i18n %}
+Layout:
+  {% trans 'Dados do Layout' %}:
+  - nome:5 versao:3 layout_de_sistema:2 ativo:2
+
+LayoutDetail:
+  {% trans 'Dados do Layout' %}:
+  - nome:5 versao:3 layout_de_sistema:2 ativo:2
+  - descricao
+
+LayoutEdition:
+  {% trans 'Dados do Layout' %}:
+  - nome:7 versao:3 ativo:2
+  - descricao
+
+RawData:
+  {% trans 'Registro' %}:
+  - layout municipio:4 ano:2
+  - arquivo
+  - created_at:3 created_by:3 modified_at:3 modified_by:3
+
+  {% trans 'Arquivos armazenados no arquivo ZIP' %}:
+  - rawdatafile_set
+
+RawDataEdition:
+  {% trans 'Registro' %}:
+  - layout:12
+  - arquivo:12

@@ -1,0 +1,21 @@
+{% extends "crud/list.html" %}
+{% load i18n %}
+
+{% block header_main %}
+  {{ block.super }}
+
+  {% if not perms.utils.change_parlamentar %}
+    <fieldset class="form-group">
+      <legend>Alterne entre Legislaturas</legend>
+      <form method="GET">
+        <select name="pk" class="form-control" onChange="form.submit();">
+          {% for l in legislaturas %}
+          <option value="{{l.id}}" {% if l.id|stringformat:"d" == request.GET.pk %} selected {% endif %}>
+            {{l}}
+          </option>
+          {% endfor %}
+        </select>
+      </form>
+    </fieldset>
+  {% endif %}
+{% endblock %}

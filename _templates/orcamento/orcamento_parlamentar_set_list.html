@@ -1,0 +1,27 @@
+{% load i18n common_tags %}
+<div class="container-table">
+  <table class="table table-form table-bordered table-hover m-0">
+    {% for op in parlamentares %}
+      {% if forloop.first %}
+        <thead>
+          <tr>
+            <th><small>PARLAMENTARES</small></th>
+            <th><small>DISP. DESTINADA À SAÚDE</small></th>
+            <th><small>DISP. COM DESTINAÇÃO GERAL</small></th>
+          </tr>
+        </thead>
+      {% endif %}
+      <tr>
+        <td>
+          {{ op.parlamentar.nome_parlamentar }}
+        </td>
+        <td class="text-center">
+          {{ op.valor_saude|decimal2str }}
+        </td>
+        <td class="text-center">
+          {{ op.valor_diversos|decimal2str }}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>

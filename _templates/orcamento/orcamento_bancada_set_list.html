@@ -1,0 +1,23 @@
+{% load i18n common_tags %}
+<div class="container-table">
+  <table class="table table-form table-bordered table-hover m-0">
+    {% for ob in bancadas %}
+      {% if forloop.first %}
+        <thead>
+          <tr>
+            <th><small>BANCADAS</small></th>
+            <th><small>DISP. COM DESTINAÇÃO GERAL</small></th>
+          </tr>
+        </thead>
+      {% endif %}
+      <tr>
+        <td>
+          {{ ob.bancada.nome}}
+        </td>
+        <td class="text-center">
+          {{ ob.valor|decimal2str }}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>

@@ -1,0 +1,19 @@
+{% extends "base_email.html" %}
+{% load i18n static %}
+
+{% block email_content %}
+  <div style="padding: 30px 20px 40px;">
+    <p>Você está recebendo este e-mail pois solicitou<br>
+      recuperação de senha de sua conta no<br>
+      <b>Sdd-Start</b>.
+    </p>
+
+    <p>Por favor clique no link a seguir e redefina sua senha:</p>
+    <br>
+
+    <a style="color: #ffffff; background-color: #02baf2; border-radius: 4px; padding: 7px 15px 6px 15px; text-decoration: none; text-transform: uppercase; font-weight: bold;"
+      href="https://{{ domain }}{% url 'backend.eauth:recuperar_senha_confirma' uidb64=uid token=token %}">
+      Redefinir Senha
+    </a>
+  </div>
+{% endblock email_content %}

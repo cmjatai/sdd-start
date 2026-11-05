@@ -1,0 +1,25 @@
+FROM node:20.18.0-bookworm
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+#ENV RUN1_PACKAGES bash vim
+#RUN apt-get install -y --no-install-recommends $RUN1_PACKAGES
+
+ENV ROOT_HOME=/var/project
+ENV HOME=${ROOT_HOME}/backend
+
+RUN mkdir -p ${HOME}
+
+RUN addgroup --gid 1001 backend
+RUN adduser --home=${HOME} --uid 1001 --gid 1001 --disabled-password --comment "" --shell=/bin/bash backend
+RUN chown -R backend:backend ${HOME}
+USER backend
+
+WORKDIR ${HOME}
+
+EXPOSE 5173/tcp
+
+VOLUME ["${HOME}"]
+
+CMD ["/var/project/backend/startfront-dev.sh"]

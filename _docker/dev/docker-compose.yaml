@@ -1,0 +1,95 @@
+name: projectdev
+services:
+  projectdevredis:
+    image: redis:bookworm
+    container_name: projectdevredis
+    restart: no
+    labels:
+       NAME: "projectdevredis"
+    volumes:
+      - projectdev_redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - projectdev-net
+  projectdevsolr:
+    image: solr:9.7 # validar mudança para 9.8 pois está causando erro
+    restart: no
+    command: bin/solr start -c -f
+    container_name: projectdevsolr
+    labels:
+        NAME: "projectdevsolr"
+    volumes:
+      - projectdev_solr9_data:/var/solr
+      - projectdev_solr9_configsets:/opt/solr/server/solr/configsets
+    ports:
+      - "8983:8983"
+      - "9983:9983"
+    networks:
+      - projectdev-net
+  projectdevfront:
+    build:
+      context: ../../.
+      dockerfile: _docker/dev/Dockerfile.Dev.Front
+    restart: no
+    container_name: projectdevfront
+    labels:
+       NAME: "projectdevfront"
+    volumes:
+      - ../../.:/var/project/backend
+    networks:
+      - projectdev-net
+    ports:
+      - "5173:5173"
+  projectdevdb:
+    image: postgres:15.12-bookworm
+    restart: no
+    container_name: projectdevpostgres
+    labels:
+        NAME: "projectdevpostgres"
+    environment:
+      POSTGRES_PASSWORD: projectdev
+      POSTGRES_USER: projectdev
+    volumes:
+      - projectdev_dbdata:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+    networks:
+      - projectdev-net
+  projectdev:
+    build:
+      context: ../../.
+      dockerfile: _docker/dev/Dockerfile.Dev
+    container_name: projectdev
+    labels:
+      NAME: "projectdev"
+    restart: no
+    environment:
+      DEBUG: 'True'
+      USE_SOLR: 'True'
+      SOLR_COLLECTIONS: backend_arq1,backend_arq2
+      SOLR_URL: http://solr:solr@projectdevsolr:8983
+      IS_ZK_EMBEDDED: 'True'
+      TZ: America/Sao_Paulo
+    volumes:
+      - /mnt/volumes/backend_media:/var/project/backend_media
+      - ../../.:/var/project/backend
+    depends_on:
+      - projectdevfront
+      - projectdevdb
+      - projectdevredis
+      - projectdevsolr
+    ports:
+      - "9099:9000"
+    networks:
+      - projectdev-net
+networks:
+  projectdev-net:
+    name: projectdev-net
+    driver: bridge
+
+volumes:
+  projectdev_solr9_data:
+  projectdev_solr9_configsets:
+  projectdev_redis_data:
+  projectdev_dbdata:

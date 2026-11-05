@@ -1,0 +1,42 @@
+{% extends "crud/detail.html" %}
+{% load common_tags %}
+{% block table_content%}
+{{ block.super }}
+{% if espelho_list %}
+  <div class="row container-table mt-5">
+    <div class="col-12">
+      <div class="overflow-hidden w-100">
+        <div class="overflow-auto">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Código / Especificação</th>
+                <th>Saldo Orçamentário</th>
+              </tr>
+            </thead>
+            <tbody style="font-family: 'Courier New', Courier, monospace">
+              {% for codigo, codigo_base, valor, especificacao in espelho_list %}
+                {% if not forloop.first %}
+                <tr>
+                  <td>
+                    <div class="d-flex gap-2">
+                      <span> {{ codigo|safe }} </span> -
+                      <span> {{ especificacao|safe }} </span>
+                    </div>
+                  </td>
+                  <td>
+                    <h5 class="d-flex w-100 justify-content-end p-0 m-0">
+                      {{ valor|safe }}
+                    </h5>
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

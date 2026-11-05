@@ -1,0 +1,81 @@
+{% load i18n %}
+Teste:
+  {% trans 'Modelo Teste'%}:
+  - id teste teste teste
+  - teste:5 teste teste
+  - teste:3 teste teste
+
+Municipio:
+  {% trans 'Cadastro' %}:
+  - codigo:3 nome:5 uf:2 ativo:2
+
+CasaLegislativa:
+  {% trans 'Casa Legislativa' %}:
+  - municipio:4 nome:5 sigla:3
+  - endereco:5 cep:3 telefone:4
+  - site email
+  - brasao
+  - informacao_adicional
+
+Legislatura:
+  {% trans 'Legislatura' %}:
+  - numero data_inicio data_fim
+
+Partido:
+  {% trans 'Partido' %}:
+  - nome:4 sigla:2 data_criacao:3 data_extincao:3
+  - logo_partido:5
+
+Parlamentar:
+  {% trans 'Dados do Parlamentar' %}:
+  - fotografia:3 nome_parlamentar:5 ativo:4
+
+ParlamentarDetail:
+  version: 2
+  col-12 1:
+    {% trans 'Dados do Parlamentar' %}:
+      col-md-3:
+      - fotografia:12
+      col-md-9:
+      - nome_parlamentar:8 ativo
+      - nome_completo:8 telefone
+      - site
+      - email
+
+ParlamentarEdition:
+  {% trans 'Dados do Parlamentar' %}:
+  - nome_parlamentar:8 ativo
+  - nome_completo:8 sexo
+  - site email telefone
+  - fotografia:7 fotografia_cropping
+
+Filiacao:
+  {% trans 'Filiações Partidárias' %}:
+  - partido:8 data data_desfiliacao
+
+
+Mandato:
+  {% trans 'Mandato' %}:
+  - legislatura titular
+  - data_inicio_mandato data_fim_mandato
+  - observacao
+
+BancadaDetail:
+  {% trans 'Bancada' %}:
+  - legislatura
+  - nome partido
+  - data_criacao data_extincao
+  - descricao
+  - filiados
+
+Bancada:
+  {% trans 'Bancada' %}:
+  - legislatura
+  - nome partido
+  - data_criacao data_extincao
+  - descricao
+
+Entidade:
+  {% trans 'Entidade' %}:
+  - cnpj:3 nome:7 ativo:2
+  - telefone email

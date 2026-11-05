@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n  %}
+
+{% block main_container_class %}container{% endblock %}
+
+{% block title %}{% endblock title %}
+{% block base_content %}
+  <div class="row">
+    <div class="col-12 d-flex justify-content-center align-items-center min-vh-80">
+      {% include "eauth/user/login_portlet.html" %}
+    </div>
+  </div>
+{% endblock  %}

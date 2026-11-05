@@ -1,0 +1,13 @@
+media
+collected_static
+.git
+.gitignore
+whoosh
+bower
+*.log
+~*
+*.pyc
+.cache
+.project
+.env
+.idea

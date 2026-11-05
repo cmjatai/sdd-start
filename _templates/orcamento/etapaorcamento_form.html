@@ -1,0 +1,37 @@
+{% extends "crud/form.html" %}
+{% load common_tags %}
+
+
+{% block extra_js %}
+<script type="module">
+  $(document).ready(function () {
+    // add evento ao input name dias_prazo que quando alterado soma o valor ao input name id_data_prev_inicio
+    $('#id_dias_prazo').on('change', function () {
+      var dias_prazo = $(this).val();
+      var data_prev_inicio = $('#id_data_prev_inicio').val();
+      if (data_prev_inicio) {
+        var data = new Date(data_prev_inicio);
+        data.setDate(data.getDate() + parseInt(dias_prazo));
+        var day = String(data.getDate()).padStart(2, '0');
+        var month = String(data.getMonth() + 1).padStart(2, '0');
+        var year = data.getFullYear();
+        $('#id_data_prev_termino').val(day + '/' + month + '/' + year);
+      }
+    });
+
+    // add evento ao input name data_prev_termino que quando alterado subtraia o valor do inputname data_prev_inicio
+    $('#id_data_prev_termino').on('change', function () {
+      var data_prev_termino = $(this).val();
+      var data_prev_inicio = $('#id_data_prev_inicio').val();
+      if (data_prev_termino && data_prev_inicio) {
+        var data1 = new Date(data_prev_termino.split('/').reverse().join('-'));
+        var data2 = new Date(data_prev_inicio.split('/').reverse().join('-'));
+        var diffTime = Math.abs(data1 - data2);
+        var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        $('#id_dias_prazo').val(diffDays);
+      }
+    });
+
+  });
+</script>
+{% endblock extra_js %}

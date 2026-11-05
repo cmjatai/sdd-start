@@ -1,0 +1,119 @@
+{% load i18n %}
+Orcamento:
+  '':
+  - rcl_previa rcl_final
+  - perc_saude:4 perc_diversos:4 perc_bancada:4
+  - parlamentares bancadas:4
+
+OrcamentoList:
+  '':
+  - ano sum rcl
+
+OrcamentoDetailEtapa100:
+  '':
+  - ano:2 etapa_atual
+  - log_metadata
+
+OrcamentoDetailEtapa200:
+  '':
+  - sum
+  - ano:2 etapa_atual
+  - rcl_previa rcl_final
+  - perc_saude:4 perc_diversos:4 perc_bancada:4
+  - valor_saude:4 valor_diversos:4 valor_bancada:4
+  - orcamento_parlamentar_set orcamento_bancada_set:5
+
+OrcamentoDetailEtapa300:
+  '':
+  - sum
+  - ano:2 etapa_atual
+  - rcl_previa rcl_final
+  - perc_saude:4 perc_diversos:4 perc_bancada:4
+  - valor_saude:4 valor_diversos:4 valor_bancada:4
+  - orcamento_parlamentar_set orcamento_bancada_set:5
+
+EtapaOrcamento:
+  '':
+  - state:6
+  - descricao:12
+  - data_prev_inicio:5 data_inicio:7
+  - data_prev_termino:5 data_termino:7
+
+EtapaOrcamentoList:
+  '':
+  - state data_prev_inicio data_prev_termino data_inicio data_termino
+
+EtapaOrcamentoEdition:
+  '':
+  - data_prev_inicio dias_prazo data_prev_termino
+  - descricao
+
+Orgao:
+  '':
+  - tipo:3 codigo:2 especificacao
+  - selecionavel
+
+OrgaoView:
+  '':
+  -  codigo:2 especificacao tipo:3 selecionavel:2
+
+Unidade:
+  '':
+  - codigo:2 especificacao
+  - tipo:3 orgao:3 selecionavel
+
+Funcao:
+  '':
+  - codigo:2 especificacao:6 selecionavel
+
+SubFuncao:
+  '':
+  - codigo:2 especificacao:6 selecionavel
+
+Programa:
+  '':
+  - codigo:2 especificacao:4 tipo:3 selecionavel
+  {% trans 'Detalhes do programa' %}:
+  - objetivo indicador
+
+AcaoEdition:
+  '':
+  - natureza_acao:3 numero_projeto_atividade:3 selecionavel
+  - especificacao
+
+Acao:
+  '':
+  - codigo:3 especificacao
+
+NaturezaDaDespesa:
+  '':
+  - codigo:3 especificacao:6 selecionavel
+
+NaturezaDaDespesaView:
+  '':
+  - formatted_codigo:3 especificacao:6 selecionavel
+
+Fonte:
+  '':
+  - codigo:3 especificacao:6 selecionavel
+
+Despesa:
+  '':
+  - orgao:6 unidade:4
+  - funcao:3 subfuncao:3 programa:6
+  - acao:7 natureza_despesa:5
+  - fonte:8 valor
+
+DespesaList:
+  '':
+  - valor orgao__codigo unidade__codigo
+  - funcao__codigo subfuncao__codigo programa__codigo
+  - acao__codigo natureza_despesa__codigo
+  - fonte__codigo
+
+DespesaDetail:
+  '':
+  - orgao|fk_urlize_for_detail:6 unidade|fk_urlize_for_detail
+  - funcao|fk_urlize_for_detail:3 subfuncao|fk_urlize_for_detail:3 programa|fk_urlize_for_detail:6
+  - acao|fk_urlize_for_detail:7 natureza_despesa|fk_urlize_for_detail:5
+  - fonte|fk_urlize_for_detail:6 selecionavel valor

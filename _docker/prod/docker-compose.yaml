@@ -1,0 +1,93 @@
+name: backend
+services:
+  backendredis:
+    image: redis:bookworm
+    container_name: backendredis
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    labels:
+       NAME: "backendredis"
+    volumes:
+      - redis_data:/data
+    #ports:
+    #  - "6379:6379"
+    networks:
+      - backend-net
+  backendsolr:
+    image: solr:9.7 # validar mudança para 9.8 pois está causando erro
+    restart: always
+    command: bin/solr start -c -f
+    container_name: backendsolr
+    labels:
+        NAME: "backendsolr"
+    volumes:
+      - solr9_data:/var/solr
+      - solr9_configsets:/opt/solr/server/solr/configsets
+    #ports:
+    #  - "8983:8983"
+    networks:
+      - backend-net
+  backenddb:
+    image: postgres:15.12-bookworm
+    restart: always
+    container_name: backendpostgres
+    labels:
+        NAME: "backendpostgres"
+    environment:
+      POSTGRES_PASSWORD: backend
+      POSTGRES_USER: backend
+      #POSTGRES_DB: backend
+      #PGDATA : /var/lib/postgresql/data/
+    volumes:
+      - backend_dbdata:/var/lib/postgresql/data/
+    #ports:
+    #  - "5433:5432"
+    networks:
+      - backend-net
+  backend:
+    build:
+      context: ../../.
+      dockerfile: _docker/prod/Dockerfile
+    container_name: backend
+    user: "root:root"
+    labels:
+       NAME: "backend"
+    restart: always
+    environment:
+      DEBUG: 'False'
+      USE_SOLR: 'True'
+      SOLR_COLLECTIONS: backend_arq1,backend_arq2
+      SOLR_URL: http://solr:solr@backendsolr:8983
+      IS_ZK_EMBEDDED: 'True'
+      TZ: America/Sao_Paulo
+    volumes:
+      - backend_data:/var/project/backend_data
+      - backend_media:/var/project/backend_media
+      - backend_logs:/var/project/backend/logs
+    depends_on:
+      backenddb:
+        condition: service_started
+      backendredis:
+        condition: service_healthy
+      backendsolr:
+        condition: service_started
+    ports:
+      - "9001:80"
+    networks:
+      - backend-net
+networks:
+  backend-net:
+    name: backend-net
+    driver: bridge
+volumes:
+  backend_dbdata:
+  backend_data:
+  backend_media:
+  backend_logs:
+  solr9_data:
+  solr9_configsets:
+  redis_data:
