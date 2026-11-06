@@ -44,12 +44,13 @@ services:
   projectdevdb:
     image: postgres:15.12-bookworm
     restart: no
-    container_name: projectdevpostgres
+    container_name: projectdevdb
     labels:
-        NAME: "projectdevpostgres"
+        NAME: "projectdevdb"
     environment:
-      POSTGRES_PASSWORD: projectdev
-      POSTGRES_USER: projectdev
+      POSTGRES_PASSWORD: sddstart
+      POSTGRES_USER: sddstart
+      POSTGRES_DB: sddstart
     volumes:
       - projectdev_dbdata:/var/lib/postgresql/data/
     ports:
@@ -68,7 +69,7 @@ services:
       DEBUG: 'True'
       USE_SOLR: 'True'
       SOLR_COLLECTIONS: backend_arq1,backend_arq2
-      SOLR_URL: http://solr:solr@projectdevsolr:8983
+      SOLR_URL: http://sddstart:sddstart@projectdevsolr:8983
       IS_ZK_EMBEDDED: 'True'
       TZ: America/Sao_Paulo
     volumes:

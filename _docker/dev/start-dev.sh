@@ -5,7 +5,7 @@ echo -e "\033[38;2;255;255;0;2m\033[1m====> StartDEV...\033[0m"
 change_env_file() {
     echo "[ENV FILE] change .env file..."
     declare -A env_vars=(
-        ["^DATABASE_URL_DEV.+$"]="DATABASE_URL_DEV = ${DATABASE_URL:=postgresql:\/\/backend:backend@projectdevdb:5432\/backend}"
+        ["^DATABASE_URL_DEV.+$"]="DATABASE_URL_DEV = ${DATABASE_URL:=postgresql:\/\/sddstart:sddstart@projectdevdb:5432\/sddstart}"
         ["^SOLR_URL.+$"]="SOLR_URL = ${SOLR_URL:=http:\/\/solr:solr@projectdevsolr:8983}"
         ["^DEBUG.+$"]="DEBUG = ${DEBUG:=True}"
         ["^DJANGO_VITE_DEV_MODE.+$"]="DJANGO_VITE_DEV_MODE = ${DJANGO_VITE_DEV_MODE:=True}"
@@ -77,5 +77,5 @@ fi
 rm ${HOME}/logs/celery/*.pid
 #celery multi start 16 -A backend -l INFO -Q:1-10 cq_arq -Q:11-12 cq_core -Q:13 cq_videos -Q:14 cq_base -Q:15-16 celery -c 2 --hostname=backendredis --pidfile=./logs/celery/%n.pid --logfile=./logs/celery/%n%I.log
 celery multi start 1 -A backend -l INFO -Q:1 celery -c:1 1 --hostname=projectdevredis --pidfile=./logs/celery/%n.pid --logfile=./logs/celery/%n%I.log
-
+sleep 3
 yes yes | python3 manage.py runserver 0.0.0.0:9000

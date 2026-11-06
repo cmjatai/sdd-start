@@ -3,13 +3,13 @@
         "authentication":{
         "blockUnknown": true,
         "class":"solr.BasicAuthPlugin",
-        "credentials":{"solr":"erZcPnvov31iE77QiMaLaHFzoI7nWF7CxaBySH8OfO0= bgkLGHnibOKKBXNweqpR1/O8oNWVZ9MxIt2LRfFTACE="},
+        "credentials":{"sddstart":"l55hj6rSzzOnvJ2yGg+U8UU34TM3scEXebfkKxvB+gw= lUTQNQEuWYyrMdT2hJw1FiMUAuVVLHAPBDNp03vMd1c="},
         "forwardCredentials": false,
         "realm": "Solr Login"
         },
         "authorization":{
             "class":"solr.RuleBasedAuthorizationPlugin",
             "permissions":[{"name":"security-edit", "role":"admin"}],
-            "user-role":{"solr":"admin"}
+            "user-role":{"sddstart":"admin"}
         }
     }

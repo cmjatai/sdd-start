@@ -43,11 +43,13 @@ export default defineConfig(({command, mode}) => {
 
   return {
     plugins: [
-      inject({   // => that should be first under plugins array
+      inject({
+        include: '**/*.js',
         $: 'jquery',
         jQuery: 'jquery',
         '_': 'lodash',
-      }),
+      },
+    ),
       vue(),
       Components({
         resolvers: [

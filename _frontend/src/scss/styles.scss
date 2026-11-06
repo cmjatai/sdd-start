@@ -1,3 +1,4 @@
+@use 'sass:math';
 $fa-font-path: '/static/webfonts';
 
 @import '@fortawesome/fontawesome-free/scss/fontawesome.scss';
@@ -59,7 +60,6 @@ $yellow:  #c99909 !default;
 @import 'custom/bootstrap';
 
 @import 'header';
-@import 'apps/orcamento';
 
 a {
   text-decoration: none;
@@ -335,7 +335,7 @@ p.control-label {
   position: relative;
   width: 100%;
   .inner {
-    padding: $grid-gutter-width / 2;
+    padding: math.div($grid-gutter-width, 2);
     line-height: 1;
   }
   h4 {
@@ -490,7 +490,7 @@ p.control-label {
   }
   .row {
     > [class^="col"]:not(:last-child) {
-      padding-right: $grid-gutter-width / 2;
+      padding-right: math.div($grid-gutter-width, 2);
     }
   }
 }
