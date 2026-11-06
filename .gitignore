@@ -222,8 +222,10 @@ __marimo__/
 
 # Attention: ignores
 __notebooks__private/
+__private__/
 node_modules/
-security.json
 .npm/
 .env
+.env_nginx_enable
+security.json
 
