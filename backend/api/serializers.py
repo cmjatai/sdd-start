@@ -40,5 +40,4 @@ class BackendSerializerMixin(serializers.ModelSerializer):
             ).metadata
         except:
             metadata = {}
-        finally:
-            return metadata
+        return metadata

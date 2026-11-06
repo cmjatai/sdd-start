@@ -20,36 +20,14 @@
     css_class_icon: fa-solid fa-gear
     url: ''
     children:
-    - title: {% trans 'Casa Legislativa' %}
-      url: backend.utils:casalegislativa_list
+    - title: {% trans '1. ...' %}
+      url: /
       css_class_icon: fa-solid fa-building-columns
     - title: ''
       url: ''
-    - title: {% trans 'Legislaturas' %}
-      url: backend.utils:legislatura_list
+    - title: {% trans '2. ' %}
+      url: /
       css_class_icon: fa-solid fa-gavel
-    - title: {% trans 'Partidos' %}
-      url: backend.utils:partido_list
-      css_class_icon: fa-solid fa-flag
-    - title: {% trans 'Parlamentares' %}
-      url: backend.utils:parlamentar_list
-      css_class_icon: fa-solid fa-user
-    - title: ''
-      url: ''
-    - title: {% trans 'Entidades' %}
-      url: backend.utils:entidade_list
-      css_class_icon: fa-solid fa-building
-  - title: {% trans 'Manutenção de Repositórios' %}
-    css_class_li: head_title
-    css_class_icon: fa-solid fa-file-zipper
-    check_permission: menu_administracao
-    children:
-    - title: {% trans 'Repositórios de Dados Externos' %}
-      url: backend.etl:rawdata_list
-      css_class_icon: fa-solid fa-file-zipper
-    - title: {% trans 'Layouts de Importação' %}
-      url: backend.etl:layout_list
-      css_class_icon: bi bi-layout-wtf
   - title: {% trans 'Manutenção de Usuários' %}
     css_class_li: head_title
     css_class_icon: fa-solid fa-users-gear

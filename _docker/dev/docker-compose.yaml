@@ -64,7 +64,7 @@ services:
     container_name: projectdev
     labels:
       NAME: "projectdev"
-    restart: no
+    restart: on-failure
     environment:
       DEBUG: 'True'
       USE_SOLR: 'True'

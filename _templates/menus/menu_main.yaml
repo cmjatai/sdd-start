@@ -10,9 +10,9 @@
 {% endcomment%}
 - title: {% trans 'INÍCIO' %}
   url: '/'
-- title: {% trans 'PARLAMENTARES' %}
-  url: 'backend.utils:parlamentar_list'
-- title: {% trans 'BANCADAS' %}
-  url: 'backend.utils:bancada_list'
-- title: {% trans 'ORÇAMENTO' %}
-  url: 'backend.orcamento:orcamento_list'
+- title: {% trans '1.' %}
+  url: '/'
+- title: {% trans '2.' %}
+  url: '/'
+- title: {% trans '3.' %}
+  url: '/'
