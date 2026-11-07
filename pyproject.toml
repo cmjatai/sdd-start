@@ -16,8 +16,8 @@ build-backend = "poetry.core.masonry.api"
 package-mode = false
 
 
-[tool.poetry.dependencies] 
-django = ">=6,<7.0"
+[tool.poetry.dependencies]
+django = ">=6,<7"
 daphne = "^4.2.3"
 channels = "^4.3.2"
 channels-redis = "^4.3.0"
@@ -28,7 +28,7 @@ gunicorn = "^26.2.0"
 kazoo = "^2.11.0"
 twisted = {extras = ["http2", "tls"], version = "^26.10.0"}
 redis = "^8.1.0"
-celery = "^5.6.3"
+celery = "^5.7.0"
 django-celery-beat = "^2.9.0"
 django-celery-results = "^2.6.0"
 psycopg = {extras = ["pool"], version = "^3.3.8"}
@@ -40,13 +40,13 @@ celery-haystack = {git = "https://github.com/LeandroJatai/celery-haystack.git"}
 pysolr = "^3.11.0"
 pymupdf = "^2.1"
 django-image-cropping = "^1.7"
-easy-thumbnails = "^2.10"
+easy-thumbnails = "^2.10.1"
 pytz = "^2026.6"
-djangorestframework = "^3.18.0"
-django-filter = "^26.1"
+djangorestframework = "^3.18.3"
+django-filter = "^26.2"
 drf-spectacular = "^0.30.0"
 crispy-bootstrap5 = "^2026.9"
-markdown = "^3.11.2"
+markdown = "^3.11.3"
 django-braces = "^1.17.0"
 num2words = "^0.5.14"
 xlsxwriter = "^3.3.1"
@@ -57,7 +57,7 @@ python-magic = "^0.4.27"
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.17.3"
+ruff = "^0.17.4"
 jupyter = "^1.1.1"
 django-debug-toolbar = "^8.0.0"
 django-silk = "^5.6.0"
