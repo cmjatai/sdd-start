@@ -1,6 +1,6 @@
 from .zenv import DEBUG, FOLDER_DEBUG_CONTAINER, PROJECT_DIR, config
 
-REDIS_HOST = config("REDIS_HOST", cast=str, default="backendredis")
+REDIS_HOST = config("REDIS_HOST", cast=str, default="startdev1-redis")
 REDIS_PORT = config("REDIS_PORT", cast=int, default=6379)
 
 if DEBUG:

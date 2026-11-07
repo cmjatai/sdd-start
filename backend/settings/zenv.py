@@ -2,7 +2,8 @@ from pathlib import Path
 
 from decouple import AutoConfig
 
-# backend_data está fora da pasta do projeto, dentro de ROOT_HOME.
+# no container do app, o arquivo backend_data está fora da pasta do projeto, dentro de ROOT_HOME.
+# Isso permite que as configurações de produção sejam carregadas corretamente sem depender do diretório do projeto dentro do container.
 production = Path(__file__).parents[3] / "backend_data" / ".env"
 production = production.exists()
 
@@ -19,9 +20,10 @@ FOLDER_DEBUG_CONTAINER = Path(
     config("FOLDER_DEBUG_CONTAINER", default=__file__, cast=str)
 )
 
-print("--------------------------- ENVIRONMENT ---------------------------")
-print("Production environment:", production)
-print("DEBUG:", DEBUG)
-print("BASE_DIR:", BASE_DIR)
-print("PROJECT_DIR:", PROJECT_DIR)
-print("-------------------------------------------------------------------")
+if not production:
+    print("--------------------------- ENVIRONMENT ---------------------------")
+    print("Production environment:", production)
+    print("DEBUG:", DEBUG)
+    print("BASE_DIR:", BASE_DIR)
+    print("PROJECT_DIR:", PROJECT_DIR)
+    print("-------------------------------------------------------------------")

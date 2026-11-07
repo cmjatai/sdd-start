@@ -1,13 +1,20 @@
 import logging
 
 from celery_haystack.signals import CelerySignalProcessor
+from django.conf import settings
 from django.db.models.base import Model
 from haystack.constants import DEFAULT_ALIAS
 from haystack.routers import DefaultRouter
 
 logger = logging.getLogger(__name__)
 
-BACKENDARQ_ALIAS = "backendarq"
+DEFAULT_ALIAS = settings.SOLR_COLLECTIONS.split(",")[0]
+BACKENDARQ_ALIAS = settings.SOLR_COLLECTIONS.split(",")[1]
+
+if not BACKENDARQ_ALIAS or not DEFAULT_ALIAS or BACKENDARQ_ALIAS == DEFAULT_ALIAS:
+    raise ValueError(
+        "SOLR_COLLECTIONS must contain at least two distinct collections separated by a comma and defined in settings.SOLR_COLLECTIONS."
+    )
 
 MODELS_SOLR_DEFAULT = ()
 

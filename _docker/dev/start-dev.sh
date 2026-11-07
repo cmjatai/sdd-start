@@ -5,12 +5,15 @@ echo -e "\033[38;2;255;255;0;2m\033[1m====> StartDEV...\033[0m"
 change_env_file() {
     echo "[ENV FILE] change .env file..."
     declare -A env_vars=(
-        ["^DATABASE_URL_DEV.+$"]="DATABASE_URL_DEV = ${DATABASE_URL:=postgresql:\/\/sddstart:sddstart@projectdevdb:5432\/sddstart}"
-        ["^SOLR_URL.+$"]="SOLR_URL = ${SOLR_URL:=http:\/\/solr:solr@projectdevsolr:8983}"
+        ["^DATABASE_URL_DEV.+$"]="DATABASE_URL_DEV = ${DATABASE_URL:=postgresql:\/\/${POSTGRES_USER:=startdev1}:${POSTGRES_PASSWORD:=startdev1}@${COMPOSE_PROJECT_NAME}-db:5432\/${POSTGRES_DB:=startdev1}}"
+        ["^SOLR_COLLECTIONS.+$"]="SOLR_COLLECTIONS = ${SOLR_COLLECTIONS:=${COMPOSE_PROJECT_NAME}_arq1,${COMPOSE_PROJECT_NAME}_arq2}"
+        ["^SOLR_URL.+$"]="SOLR_URL = ${SOLR_URL:=http:\/\/startdev1:startdev1@${COMPOSE_PROJECT_NAME}-solr:8983}"
         ["^DEBUG.+$"]="DEBUG = ${DEBUG:=True}"
         ["^DJANGO_VITE_DEV_MODE.+$"]="DJANGO_VITE_DEV_MODE = ${DJANGO_VITE_DEV_MODE:=True}"
-        ["^REDIS_HOST.+$"]="REDIS_HOST = ${REDIS_HOST:=projectdevredis}"
+        ["^REDIS_HOST.+$"]="REDIS_HOST = ${REDIS_HOST:=${COMPOSE_PROJECT_NAME}-redis}"
         ["^FOLDER_DEBUG_CONTAINER.+$"]="FOLDER_DEBUG_CONTAINER = ${FOLDER_DEBUG_CONTAINER:=${HOME}}"
+        ["^COMPOSE_PROJECT_NAME.+$"]="COMPOSE_PROJECT_NAME = ${COMPOSE_PROJECT_NAME:=${COMPOSE_PROJECT_NAME}}"
+        ["^TZ.+$"]="TZ = ${TZ:=${TZ:=America/Sao_Paulo}}"
     )
 
     echo "" >> backend/.env
@@ -33,8 +36,8 @@ yes yes | python3 manage.py migrate
 
 ## SOLR
 USE_SOLR="${USE_SOLR:=False}"
-SOLR_URL="${SOLR_URL:=http://solr:solr@projectdevsolr:8983}"
-SOLR_COLLECTIONS="${SOLR_COLLECTIONS:=backend_arq1,backend_arq2}"
+SOLR_URL="${SOLR_URL:=http://startdev1:startdev1@${COMPOSE_PROJECT_NAME}-solr:8983}"
+SOLR_COLLECTIONS="${SOLR_COLLECTIONS:=${COMPOSE_PROJECT_NAME}_arq1,${COMPOSE_PROJECT_NAME}_arq2}"
 NUM_SHARDS=${NUM_SHARDS:=1}
 RF=${RF:=1}
 MAX_SHARDS_PER_NODE=${MAX_SHARDS_PER_NODE:=1}
@@ -76,6 +79,6 @@ fi
 
 rm ${HOME}/logs/celery/*.pid
 #celery multi start 16 -A backend -l INFO -Q:1-10 cq_arq -Q:11-12 cq_core -Q:13 cq_videos -Q:14 cq_base -Q:15-16 celery -c 2 --hostname=backendredis --pidfile=./logs/celery/%n.pid --logfile=./logs/celery/%n%I.log
-celery multi start 1 -A backend -l INFO -Q:1 celery -c:1 1 --hostname=projectdevredis --pidfile=./logs/celery/%n.pid --logfile=./logs/celery/%n%I.log
+celery multi start 1 -A backend -l INFO -Q:1 celery -c:1 1 --hostname=${COMPOSE_PROJECT_NAME}-redis --pidfile=./logs/celery/%n.pid --logfile=./logs/celery/%n%I.log
 sleep 3
 yes yes | python3 manage.py runserver 0.0.0.0:9000

@@ -1,17 +1,16 @@
 from dj_database_url import parse as db_url
 
-from .apps import *
-from .auth import *
-from .drf import *
-from .frontend import *
-
-# from .email import *
-from .languages import *
-from .logs import *
-from .medias import *  # Configurações relacionadas a arquivos de mídia, incluindo diretórios de armazenamento e processamento de imagens
-from .middleware import *  # Configurações de middleware do Django, incluindo middlewares personalizados e de terceiros
-from .solr import *  # Configurações relacionadas ao Solr, incluindo conexão e indexação de dados
-from .zasyncs import *  # Configurações Cache, Redis, Celery e Channels, incluindo Channels Layers e Celery Beat Scheduler
+from .apps import *  # Configurações relacionadas aos aplicativos instalados no Django, incluindo aplicativos personalizados e de terceiros
+from .auth import *  # Configurações relacionadas à autenticação, incluindo backends, permissões e gerenciamento de usuários
+from .drf import *  # Configurações relacionadas ao Django REST Framework, incluindo autenticação, permissões e serialização de dados
+from .email import *  # Configurações relacionadas ao envio de e-mails, incluindo backends, templates e credenciais de serviço
+from .frontend import *  # Configurações relacionadas ao frontend, incluindo templates, arquivos estáticos e integração com frameworks de frontend
+from .languages import *  # Configurações relacionadas a idiomas
+from .logs import *  # Configurações relacionadas a logs, incluindo formatação, níveis e destinos de log
+from .medias import *  # Configurações relacionadas a arquivos de mídia, incluindo diretórios de armazenamento e processamento de imagens, como imagens e vídeos
+from .middleware import *  # Configurações de middleware do Django, incluindo middlewares personalizados e de terceiros, como autenticação, segurança e logging
+from .solr import *  # Configurações relacionadas ao Solr, incluindo conexão, autenticação e indexação de dados
+from .zasyncs import *  # Configurações Cache, Redis, Celery e Channels, incluindo Channels Layers, Celery Beat Scheduler e configuração de filas assíncronas
 from .zenv import BASE_DIR, DEBUG, FOLDER_DEBUG_CONTAINER, PROJECT_DIR, config
 
 BASE_DIR = BASE_DIR
@@ -45,7 +44,7 @@ DATABASES = {
 }
 if DEBUG and FOLDER_DEBUG_CONTAINER != PROJECT_DIR:
     DATABASES["default"]["HOST"] = "localhost"
-    DATABASES["default"]["PORT"] = 5432
+    DATABASES["default"]["PORT"] = 5433
     print("Running in debug mode with local database settings.")
     print("Database host:", DATABASES["default"]["HOST"])
     print("Database port:", DATABASES["default"]["PORT"])

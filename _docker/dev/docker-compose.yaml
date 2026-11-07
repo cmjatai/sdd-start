@@ -1,96 +1,89 @@
-name: projectdev
 services:
-  projectdevredis:
+  redis:
     image: redis:bookworm
-    container_name: projectdevredis
-    restart: no
-    labels:
-       NAME: "projectdevredis"
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-redis
+    restart: on-failure
     volumes:
-      - projectdev_redis_data:/data
+      - redis_data:/data
     ports:
       - "6379:6379"
     networks:
-      - projectdev-net
-  projectdevsolr:
+      - appdev-net
+  solr:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-solr
     image: solr:9.7 # validar mudança para 9.8 pois está causando erro
-    restart: no
+    restart: on-failure
     command: bin/solr start -c -f
-    container_name: projectdevsolr
-    labels:
-        NAME: "projectdevsolr"
     volumes:
-      - projectdev_solr9_data:/var/solr
-      - projectdev_solr9_configsets:/opt/solr/server/solr/configsets
+      - solr9_data:/var/solr
+      - solr9_configsets:/opt/solr/server/solr/configsets
     ports:
       - "8983:8983"
       - "9983:9983"
     networks:
-      - projectdev-net
-  projectdevfront:
+      - appdev-net
+  front:
     build:
       context: ../../.
       dockerfile: _docker/dev/Dockerfile.Dev.Front
-    restart: no
-    container_name: projectdevfront
-    labels:
-       NAME: "projectdevfront"
+    restart: on-failure
     volumes:
       - ../../.:/var/project/backend
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-front
     networks:
-      - projectdev-net
+      - appdev-net
     ports:
       - "5173:5173"
-  projectdevdb:
-    image: postgres:15.12-bookworm
-    restart: no
-    container_name: projectdevdb
-    labels:
-        NAME: "projectdevdb"
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-db
+    image: pgvector/pgvector:0.8.7-pg18-bookworm
+    restart: on-failure
     environment:
-      POSTGRES_PASSWORD: sddstart
-      POSTGRES_USER: sddstart
-      POSTGRES_DB: sddstart
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startdev1}
+      POSTGRES_USER: ${POSTGRES_USER:-startdev1}
+      POSTGRES_DB: ${POSTGRES_DB:-startdev1}
+      PGDATA: /var/lib/postgresql/data/
     volumes:
-      - projectdev_dbdata:/var/lib/postgresql/data/
+      - dbdata:/var/lib/postgresql/data/
     ports:
       - "5433:5432"
     networks:
-      - projectdev-net
-  projectdev:
+      - appdev-net
+  appdev:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-appdev
     build:
       context: ../../.
       dockerfile: _docker/dev/Dockerfile.Dev
-    container_name: projectdev
-    labels:
-      NAME: "projectdev"
     restart: on-failure
     environment:
       DEBUG: 'True'
       USE_SOLR: 'True'
-      SOLR_COLLECTIONS: backend_arq1,backend_arq2
-      SOLR_URL: http://sddstart:sddstart@projectdevsolr:8983
+      SOLR_COLLECTIONS: ${COMPOSE_PROJECT_NAME:-startdev1}_arq1,${COMPOSE_PROJECT_NAME:-startdev1}_arq2
+      SOLR_URL: http://${SOLR_USER:-startdev1}:${SOLR_PASSWORD:-startdev1}@${COMPOSE_PROJECT_NAME:-startdev1}-solr:8983
       IS_ZK_EMBEDDED: 'True'
       TZ: America/Sao_Paulo
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-startdev1}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startdev1}
+      POSTGRES_USER: ${POSTGRES_USER:-startdev1}
+      POSTGRES_DB: ${POSTGRES_DB:-startdev1}
     volumes:
       - /mnt/volumes/backend_media:/var/project/backend_media
       - ../../.:/var/project/backend
     depends_on:
-      - projectdevfront
-      - projectdevdb
-      - projectdevredis
-      - projectdevsolr
+      - front
+      - db
+      - redis
+      - solr
     ports:
-      - "9099:9000"
+      - "${APP_PORT:-9099}:9000"
     networks:
-      - projectdev-net
+      - appdev-net
 networks:
-  projectdev-net:
-    name: projectdev-net
+  appdev-net:
     driver: bridge
 
 volumes:
-  projectdev_solr9_data:
-  projectdev_solr9_configsets:
-  projectdev_redis_data:
-  projectdev_dbdata:
+  solr9_data:
+  solr9_configsets:
+  redis_data:
+  dbdata:
