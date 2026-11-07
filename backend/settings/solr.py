@@ -1,6 +1,6 @@
 from .zenv import DEBUG, FOLDER_DEBUG_CONTAINER, PROJECT_DIR, config
 
-USE_SOLR = config("USE_SOLR", default=True, cast=bool)
+USE_SOLR = config("USE_SOLR", default=False, cast=bool)
 SOLR_URL = config("SOLR_URL", default="http://startdev1:startdev1@startdev1-solr:8983")
 HAYSTACK_SIGNAL_PROCESSOR = "backend.haystack.CelerySignalProcessor"
 

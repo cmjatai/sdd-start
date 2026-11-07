@@ -1,16 +1,16 @@
 from dj_database_url import parse as db_url
 
-from .apps import *  # Configurações relacionadas aos aplicativos instalados no Django, incluindo aplicativos personalizados e de terceiros
-from .auth import *  # Configurações relacionadas à autenticação, incluindo backends, permissões e gerenciamento de usuários
-from .drf import *  # Configurações relacionadas ao Django REST Framework, incluindo autenticação, permissões e serialização de dados
-from .email import *  # Configurações relacionadas ao envio de e-mails, incluindo backends, templates e credenciais de serviço
-from .frontend import *  # Configurações relacionadas ao frontend, incluindo templates, arquivos estáticos e integração com frameworks de frontend
-from .languages import *  # Configurações relacionadas a idiomas
-from .logs import *  # Configurações relacionadas a logs, incluindo formatação, níveis e destinos de log
-from .medias import *  # Configurações relacionadas a arquivos de mídia, incluindo diretórios de armazenamento e processamento de imagens, como imagens e vídeos
-from .middleware import *  # Configurações de middleware do Django, incluindo middlewares personalizados e de terceiros, como autenticação, segurança e logging
-from .solr import *  # Configurações relacionadas ao Solr, incluindo conexão, autenticação e indexação de dados
-from .zasyncs import *  # Configurações Cache, Redis, Celery e Channels, incluindo Channels Layers, Celery Beat Scheduler e configuração de filas assíncronas
+from .apps import *  # Configurações relacionadas aos aplicativos instalados no Django, incluindo aplicativos personalizados e de terceiros  # noqa: F403
+from .auth import *  # Configurações relacionadas à autenticação, incluindo backends, permissões e gerenciamento de usuários # noqa: F403
+from .drf import *  # Configurações relacionadas ao Django REST Framework, incluindo autenticação, permissões e serialização de dados # noqa: F403
+from .email import *  # Configurações relacionadas ao envio de e-mails, incluindo backends, templates e credenciais de serviço # noqa: F403
+from .frontend import *  # Configurações relacionadas ao frontend, incluindo templates, arquivos estáticos e integração com frameworks de frontend # noqa: F403
+from .languages import *  # Configurações relacionadas a idiomas # noqa: F403
+from .logs import *  # Configurações relacionadas a logs, incluindo formatação, níveis e destinos de log # noqa: F403
+from .medias import *  # Configurações relacionadas a arquivos de mídia, incluindo diretórios de armazenamento e processamento de imagens, como imagens e vídeos  # noqa: F403
+from .middleware import *  # Configurações de middleware do Django, incluindo middlewares personalizados e de terceiros, como autenticação, segurança e logging # noqa: F403
+from .solr import *  # Configurações relacionadas ao Solr, incluindo conexão, autenticação e indexação de dados # noqa: F403
+from .zasyncs import *  # Configurações Cache, Redis, Celery e Channels, incluindo Channels Layers, Celery Beat Scheduler e configuração de filas assíncronas # noqa: F403
 from .zenv import BASE_DIR, DEBUG, FOLDER_DEBUG_CONTAINER, PROJECT_DIR, config
 
 BASE_DIR = BASE_DIR

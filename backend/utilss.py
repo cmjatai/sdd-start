@@ -37,6 +37,16 @@ NONE_YES_NO_CHOICES = [(None, _("---------")), (True, _("Sim")), (False, _("Não
 DECIMAL_PLACES = {i: (decimal.Decimal(10) ** -i) for i in range(0, 10)}
 
 
+def get_mime_type_from_file_extension(filename):
+    # TODO: procurar solução com python-magic ou mimetypes para obter o tipo MIME real do arquivo
+    ext = filename.split(".")[-1]
+    if ext == "odt":
+        mime = "application/vnd.oasis.opendocument.text"
+    else:
+        mime = "application/%s" % (ext,)
+    return mime
+
+
 def quantize(
     value, decimal_places=2, rounding=decimal.ROUND_HALF_DOWN
 ) -> decimal.Decimal:
@@ -127,7 +137,7 @@ def run_sql(sql):
         result = cursor.execute(sql)
         try:
             result = cursor.fetchall()
-        except Exception as e:
+        except Exception:
             pass
     return result
 
@@ -176,15 +186,6 @@ def clean_text(text, _normalizes=None):
         return text
     except:
         return txt
-
-
-def get_mime_type_from_file_extension(filename):
-    ext = filename.split(".")[-1]
-    if ext == "odt":
-        mime = "application/vnd.oasis.opendocument.text"
-    else:
-        mime = "application/%s" % (ext,)
-    return mime
 
 
 def intervalos_tem_intersecao(a_inicio, a_fim, b_inicio, b_fim):
@@ -258,7 +259,6 @@ class TimeExecution(object):
 
 
 class FileFieldCheckMixin(BaseForm):
-
     def _check(self):
         cleaned_data = super(FileFieldCheckMixin, self).clean()
         errors = []

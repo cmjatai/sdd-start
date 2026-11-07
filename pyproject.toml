@@ -93,5 +93,5 @@ omit = [
     "backend/asgi.py",
 ]
 
-[tool.ruff.format]
-quote-style = "single"
+[tool.ruff.lint]
+select = ["E", "F", "I"]
