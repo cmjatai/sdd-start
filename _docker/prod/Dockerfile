@@ -22,7 +22,7 @@ COPY py* ${HOME}
 RUN poetry install --without dev,test,docs
 
 #COPY package-lock.json ${HOME}
-COPY package.json ${HOME}
+COPY package.json   ${HOME}
 COPY vite.config.js ${HOME}
 
 ADD _frontend   ${HOME}/_frontend
@@ -31,7 +31,7 @@ RUN npm run build
 
 ADD solr        ${HOME}/solr
 ADD drfautoapi  ${HOME}/drfautoapi
-ADD backend  ${HOME}/backend
+ADD backend     ${HOME}/backend
 ADD _templates  ${HOME}/_templates
 ADD _docker     ${HOME}/_docker
 

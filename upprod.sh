@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-sudo docker compose -f _docker/prod/docker-compose.yaml up --build -d
+COMPOSE_PROJECT_NAME=${1:-startprod1}
+sudo docker compose -p $COMPOSE_PROJECT_NAME --env-file _docker/prod/.env --progress=plain -f _docker/prod/docker-compose.yaml up --build -d

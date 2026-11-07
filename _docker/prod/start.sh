@@ -14,29 +14,33 @@ change_env_file() {
         echo $KEY > ${ROOT_HOME}/backend_data/secret.key
     fi
 
-    sed -i -E "s|^SECRET_KEY.+$|\n|g" backend/.env
-    echo "SECRET_KEY = $KEY" >> backend/.env
+    sed -i -E "s|^SECRET_KEY.+$|\n|g" ${ROOT_HOME}/backend_data/.env
+    echo "SECRET_KEY = $KEY" >> ${ROOT_HOME}/backend_data/.env
 
     declare -A env_vars=(
-        ["^DATABASE_URL_PRD.+$"]="DATABASE_URL_PRD = ${DATABASE_URL:=postgresql:\/\/backend:backend@backenddb:5432\/backend}"
+        ["^DATABASE_URL_PRD.+$"]="DATABASE_URL_PRD = ${DATABASE_URL:=postgresql://${POSTGRES_USER:=startprod1}:${POSTGRES_PASSWORD:=startprod1}@${COMPOSE_PROJECT_NAME}-db:5432/${POSTGRES_DB:=startprod1}}"
+        ["^SOLR_COLLECTIONS.+$"]="SOLR_COLLECTIONS = ${SOLR_COLLECTIONS:=${COMPOSE_PROJECT_NAME}_arq1,${COMPOSE_PROJECT_NAME}_arq2}"
+        ["^SOLR_URL.+$"]="SOLR_URL = ${SOLR_URL:=http:\/\/startprod1:startprod1@${COMPOSE_PROJECT_NAME}-solr:8983}"
         ["^DEBUG.+$"]="DEBUG = ${DEBUG:=False}"
-        ["^SOLR_URL.+$"]="SOLR_URL = ${SOLR_URL:=http:\/\/solr:solr@backendsolr:8983}"
-        ["^REDIS_HOST.+$"]="REDIS_HOST = ${REDIS_HOST:=backendredis}"
         ["^DJANGO_VITE_DEV_MODE.+$"]="DJANGO_VITE_DEV_MODE = ${DJANGO_VITE_DEV_MODE:=False}"
+        ["^REDIS_HOST.+$"]="REDIS_HOST = ${REDIS_HOST:=${COMPOSE_PROJECT_NAME}-redis}"
+        ["^FOLDER_DEBUG_CONTAINER.+$"]="FOLDER_DEBUG_CONTAINER = ${FOLDER_DEBUG_CONTAINER:=${HOME}}"
+        ["^COMPOSE_PROJECT_NAME.+$"]="COMPOSE_PROJECT_NAME = ${COMPOSE_PROJECT_NAME:=${COMPOSE_PROJECT_NAME}}"
+        ["^TZ.+$"]="TZ = ${TZ:=${TZ:=America/Sao_Paulo}}"
     )
 
-    echo "" >> backend/.env
+    echo "" >> ${ROOT_HOME}/backend_data/.env
     for regex in "${!env_vars[@]}"; do
-        sed -i -E "s|$regex|${env_vars[$regex]}|g" backend/.env
+        sed -i -E "s|$regex|${env_vars[$regex]}|g" ${ROOT_HOME}/backend_data/.env
         key=$(echo "${env_vars[$regex]}" | cut -d' ' -f1)
-        if ! grep -q "^$key" backend/.env; then
-            echo "${env_vars[$regex]}" >> backend/.env
+        if ! grep -q "^$key" ${ROOT_HOME}/backend_data/.env; then
+            echo "${env_vars[$regex]}" >> ${ROOT_HOME}/backend_data/.env
         fi
     done
 
     # Remover quebras de linhas sequenciais
-    echo "" >> backend/.env
-    sed -i -E ':a;N;$!ba;s/\n{3,}/\n\n/g' backend/.env
+    echo "" >> ${ROOT_HOME}/backend_data/.env
+    sed -i -E ':a;N;$!ba;s/\n{3,}/\n\n/g' ${ROOT_HOME}/backend_data/.env
 }
 
 change_env_file
@@ -45,8 +49,8 @@ yes yes | python3 manage.py migrate
 
 ## SOLR
 USE_SOLR="${USE_SOLR:=False}"
-SOLR_URL="${SOLR_URL:=http://localhost:8983}"
-SOLR_COLLECTIONS="${SOLR_COLLECTIONS:=backend_arq1}"
+SOLR_URL="${SOLR_URL:=http://startprod1:startprod1@${COMPOSE_PROJECT_NAME}-solr:8983}"
+SOLR_COLLECTIONS="${SOLR_COLLECTIONS:=${COMPOSE_PROJECT_NAME}_arq1,${COMPOSE_PROJECT_NAME}_arq2}"
 NUM_SHARDS=${NUM_SHARDS:=1}
 RF=${RF:=1}
 MAX_SHARDS_PER_NODE=${MAX_SHARDS_PER_NODE:=1}

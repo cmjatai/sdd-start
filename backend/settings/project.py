@@ -23,7 +23,7 @@ DEBUG_RUNNING_CONTAINER = DEBUG and "/var/project" in str(PROJECT_DIR)
 PROJECT_VERSION = "0.0.1"
 
 ALLOWED_HOSTS = ["*"]
-SITE_URL = config("SITE_URL", default="http://localhost:9098")
+SITE_URL = config("SITE_URL", default="http://192.168.15.9:9001")
 CSRF_TRUSTED_ORIGINS = [
     SITE_URL,
 ]
