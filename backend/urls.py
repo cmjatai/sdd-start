@@ -1,9 +1,8 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.urls import include, path
 from django.views.generic import TemplateView
-from django.views.static import serve as view_static_server
 
 urlpatterns = [
     path("system/", admin.site.urls),
@@ -20,12 +19,3 @@ if settings.DEBUG and settings.DEBUG_TOOLBAR_ACTIVE:
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += [
-        re_path(
-            r"^media/(?P<path>.*)$",
-            view_static_server,
-            {
-                "document_root": settings.MEDIA_ROOT,
-            },
-        ),
-    ]
