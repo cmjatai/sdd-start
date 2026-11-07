@@ -27,6 +27,7 @@ change_env_file() {
         ["^FOLDER_DEBUG_CONTAINER.+$"]="FOLDER_DEBUG_CONTAINER = ${FOLDER_DEBUG_CONTAINER:=${HOME}}"
         ["^COMPOSE_PROJECT_NAME.+$"]="COMPOSE_PROJECT_NAME = ${COMPOSE_PROJECT_NAME:=${COMPOSE_PROJECT_NAME}}"
         ["^TZ.+$"]="TZ = ${TZ:=${TZ:=America/Sao_Paulo}}"
+        ["^SITE_URL.+$"]="SITE_URL = ${SITE_URL:=http://localhost:${APP_PORT:=9001}}"
     )
 
     echo "" >> ${ROOT_HOME}/backend_data/.env

@@ -60,6 +60,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startprod1}
       POSTGRES_USER: ${POSTGRES_USER:-startprod1}
       POSTGRES_DB: ${POSTGRES_DB:-startprod1}
+      SITE_URL: ${SITE_URL:-http://localhost:${APP_PORT:-9001}}
     volumes:
       - data:/var/project/backend_data
       - media:/var/project/backend_media
@@ -72,7 +73,7 @@ services:
       solr:
         condition: service_started
     ports:
-      - "9001:80"
+      - "${APP_PORT:-9001}:80"
     networks:
       - app-net
 networks:
