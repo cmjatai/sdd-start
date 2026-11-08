@@ -26,8 +26,8 @@ COPY package.json   ${HOME}
 COPY vite.config.js ${HOME}
 
 ADD _frontend   ${HOME}/_frontend
-RUN npm install
-RUN npm run build
+#RUN npm install
+#RUN npm run build
 
 ADD solr        ${HOME}/solr
 ADD drfautoapi  ${HOME}/drfautoapi
@@ -57,7 +57,7 @@ RUN chmod +x ${HOME}/start.sh && \
     chmod +x ${HOME}/wait-for-pg.sh
 
 # Debian não possui usuário 'nginx' necessário para o Debian
-RUN useradd -r -u 1002 --no-create-home -g root nginx
+RUN useradd -r --no-create-home -g root nginx
 
 USER nginx
 

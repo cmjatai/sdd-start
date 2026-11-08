@@ -49,6 +49,7 @@ DJANGO_VITE = {
         "manifest_path": (
             DJANGO_VITE_ASSETS_PATH if DJANGO_VITE_DEV_MODE else STATIC_ROOT
         )
+        / "frontend"
         / ".vite"
         / "manifest.json",
     }

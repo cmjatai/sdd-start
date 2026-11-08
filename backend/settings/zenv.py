@@ -19,11 +19,3 @@ PROJECT_DIR = Path(__file__).parents[2]
 FOLDER_DEBUG_CONTAINER = Path(
     config("FOLDER_DEBUG_CONTAINER", default=__file__, cast=str)
 )
-
-if not production:
-    print("--------------------------- ENVIRONMENT ---------------------------")
-    print("Production environment:", production)
-    print("DEBUG:", DEBUG)
-    print("BASE_DIR:", BASE_DIR)
-    print("PROJECT_DIR:", PROJECT_DIR)
-    print("-------------------------------------------------------------------")

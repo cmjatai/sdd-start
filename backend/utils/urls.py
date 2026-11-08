@@ -1,4 +1,4 @@
-from django.urls import include, re_path
+from django.urls.conf import include, re_path
 
 from . import views
 from .apps import UtilsConfig

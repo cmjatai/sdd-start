@@ -8,48 +8,49 @@ import '~@/scss/styles.scss'
 // Import all of Bootstrap's JS
 
 import * as bootstrap from 'bootstrap'
-// import 'bootstrap-icons/font/bootstrap-icons.scss'
+
+import { library, dom } from '@fortawesome/fontawesome-svg-core'
+
+/* import all the icons in Free Solid, Free Regular, and Brands styles */
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
+import { fab } from '@fortawesome/free-brands-svg-icons'
+library.add(fas, far, fab)
+
+//import { faUser, faHouse, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons'
+//library.add(faUser, faHouse, faEnvelope, faKey)
+
+dom.watch()
+
 
 import axios from 'axios'
 
 import './js/utils'
 
-import { onMounted, createApp } from 'vue'
+import { createApp } from 'vue'
 import {createBootstrap} from 'bootstrap-vue-next'
 
 import { createPinia } from 'pinia'
 import router from './js/routers'
 
 import EventBus from './js/EventBus'
-import rootComponents from './rootComponents'
-import { useWsTimeRefresh } from './js/composables/WsTimeRefresh'
+import registerComponents from './registerComponents'
 
 document.querySelectorAll('[data-bs-toggle="popover"]')
   .forEach(popover => {
     new bootstrap.Popover(popover)
   })
 
+axios.defaults.headers.get['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+axios.defaults.headers.get['Pragma'] = 'no-cache' // Suporte para navegadores mais antigos
+axios.defaults.headers.get['Expires'] = '0' // Expira imediatamente
+
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
 const app = createApp({
-  components: rootComponents,
+  components: registerComponents.rootComponents,
   setup() {
-
-    const protocol = (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
-    const ws_url = protocol + window.location.host + '/ws/time-refresh'
-
-    const wsTimeRefresh = useWsTimeRefresh(ws_url)
-    wsTimeRefresh.connect()
-
-    onMounted(() => {
-      /* Enable this to test the time refresh
-      setTimeout(() => {
-        wsTimeRefresh.send(
-          {message:'Time refresh requested'}
-        )
-      }, 3000)*/
-    })
   },
   delimiters: ['[[', ']]'],
 })
@@ -65,3 +66,22 @@ app
   .use(createBootstrap())
   .mount('#emf')
 
+Object.keys(registerComponents.globalComponents).forEach(name => {
+  app.component(name, registerComponents.globalComponents[name])
+})
+
+
+// Registro manual do Service Worker para controle total da URL
+console.debug('Environment Mode:', import.meta.env.MODE)
+
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  const swUrl = '/service-worker.js'
+
+  navigator.serviceWorker.register(swUrl, { scope: '/' , type: 'module' })
+    .then((registration) => {
+      console.debug('Service Worker registrado com sucesso no escopo:', registration.scope)
+    })
+    .catch((error) => {
+      console.error('Falha ao registrar o Service Worker:', error)
+    })
+}

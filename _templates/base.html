@@ -5,8 +5,12 @@
   <meta charset="utf-8">
   <meta name="theme-color" content="#5B9F91">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'frontend/favicon.ico' %}">
+  {% if not debug %}
+    <link rel="manifest" href="/manifest.json">
+  {% endif %}
   <title>Backend</title>
+
   {% vite_hmr_client %}
   {% vite_asset 'main.js' %}
 
@@ -100,7 +104,7 @@
                   {% else %}
                     <li>
                       <a class="btn btn-link" href="{% url 'backend.eauth:login' %}" title="Acessar ao Sdd-Start">
-                        <i class="fa fa-user" aria-hidden="true"></i>
+                        <i class="fa-solid fa-user" aria-hidden="true"></i>
                       </a>
                     </li>
                   {% endif %}

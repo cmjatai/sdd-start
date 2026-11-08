@@ -73,3 +73,4 @@ class MediaPublicView(View):
         response["X-Accel-Redirect"] = "/mediaredirect/{0}".format(path)
 
         return response
+
