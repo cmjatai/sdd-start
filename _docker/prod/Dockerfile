@@ -1,4 +1,4 @@
-FROM leandrojatai/building_foundation:0002
+FROM leandrojatai/building_foundation:0003
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -58,7 +58,6 @@ RUN chmod +x ${HOME}/start.sh && \
 
 # Debian não possui usuário 'nginx' necessário para o Debian
 RUN useradd -r --no-create-home -g root nginx
-
 USER nginx
 
 ENV DEBIAN_FRONTEND=teletype

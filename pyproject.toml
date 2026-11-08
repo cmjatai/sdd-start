@@ -1,6 +1,13 @@
 [project]
 name = "sdd-start"
 version = "0.1.0"
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14"
+]
 description = "Backend 0.1"
 authors = [
     {name = "LeandroJatai",email = "leandroroberto.br@gmail.com"}
@@ -14,7 +21,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = false
-
 
 [tool.poetry.dependencies]
 django = ">=6,<7"
