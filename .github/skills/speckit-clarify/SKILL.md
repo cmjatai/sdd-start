@@ -1,6 +1,6 @@
 ---
 name: "speckit-clarify"
-description: "Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec."
+description: "Identifica áreas subespecificadas na especificação da funcionalidade atual fazendo até 5 perguntas de esclarecimento altamente direcionadas e registrando as respostas de volta na especificação."
 compatibility: "Requires spec-kit project structure with .specify/ directory"
 metadata:
   author: "github-spec-kit"
@@ -8,284 +8,284 @@ metadata:
 ---
 
 
-## User Input
+## Entrada do Usuário
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+Você **DEVE** considerar a entrada do usuário antes de prosseguir (se não estiver vazia).
 
-## Pre-Execution Checks
+## Verificações Pré-Execução
 
-**Check for extension hooks (before clarification)**:
-- Check if `.specify/extensions.yml` exists in the project root.
-- If it exists, read it and look for entries under the `hooks.before_clarify` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
-- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` → `/speckit-git-commit`.
-- For each executable hook, output the following based on its `optional` flag:
-  - **Optional hook** (`optional: true`):
+**Verifique se há hooks de extensão (antes do esclarecimento)**:
+- Verifique se `.specify/extensions.yml` existe na raiz do projeto.
+- Se existir, leia-o e procure entradas sob a chave `hooks.before_clarify`
+- Se o YAML não puder ser interpretado ou for inválido, não ignore silenciosamente: informe ao usuário que `.specify/extensions.yml` não pôde ser lido (inclua o erro do parser) e que nenhum hook foi verificado, incluindo quaisquer hooks obrigatórios (`optional: false`) registrados ali, e então continue normalmente
+- Ignore os hooks em que `enabled` seja explicitamente `false`. Trate hooks sem o campo `enabled` como habilitados por padrão.
+- Para cada hook restante, **não** tente interpretar ou avaliar as expressões de `condition` do hook:
+  - Se o hook não tiver o campo `condition`, ou ele for nulo/vazio, trate o hook como executável
+  - Se o hook definir uma `condition` não vazia, ignore o hook e deixe a avaliação da condição para a implementação do HookExecutor
+- Ao construir invocações de comando a partir dos nomes de comando dos hooks, substitua pontos (`.`) por hífens (`-`). Por exemplo, `speckit.git.commit` → `/speckit-git-commit`.
+- Para cada hook executável, produza a saída a seguir de acordo com o flag `optional`:
+  - **Hook opcional** (`optional: true`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Optional Pre-Hook**: {extension}
-    Command: `/{command}`
-    Description: {description}
+    **Pré-Hook Opcional**: {extension}
+    Comando: `/{command}`
+    Descrição: {description}
 
     Prompt: {prompt}
-    To execute: `/{command}`
+    Para executar: `/{command}`
     ```
-  - **Mandatory hook** (`optional: false`):
+  - **Hook obrigatório** (`optional: false`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Automatic Pre-Hook**: {extension}
-    Executing: `/{command}`
+    **Pré-Hook Automático**: {extension}
+    Executando: `/{command}`
     EXECUTE_COMMAND: {command}
 
-    Wait for the result of the hook command before proceeding to the Outline.
+    Aguarde o resultado do comando do hook antes de prosseguir para o Esboço.
     ```
-    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
-- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+    Após emitir o bloco acima, você DEVE de fato invocar o hook e aguardar sua conclusão antes de continuar. Execute-o da mesma forma que executaria o comando por conta própria neste agente/sessão (a invocação pode diferir do id literal `{command}` mostrado acima, por exemplo, um agente em modo skills o executa como `/skill:speckit-...` ou `$speckit-...`). Apenas emitir o bloco não executa o hook.
+- Se nenhum hook estiver registrado ou `.specify/extensions.yml` não existir, ignore silenciosamente
 
-## Outline
+## Esboço
 
-Goal: Detect and reduce ambiguity or missing decision points in the active feature specification and record the clarifications directly in the spec file.
+Objetivo: Detectar e reduzir ambiguidades ou pontos de decisão ausentes na especificação da funcionalidade ativa e registrar os esclarecimentos diretamente no arquivo da especificação.
 
-Note: This clarification workflow is expected to run (and be completed) BEFORE invoking `/speckit-plan`. If the user explicitly states they are skipping clarification (e.g., exploratory spike), you may proceed, but must warn that downstream rework risk increases.
+Nota: Espera-se que este fluxo de esclarecimento seja executado (e concluído) ANTES de invocar `/speckit-plan`. Se o usuário declarar explicitamente que está pulando o esclarecimento (por exemplo, um spike exploratório), você pode prosseguir, mas deve avisar que o risco de retrabalho posterior aumenta.
 
-Execution steps:
+Etapas de execução:
 
-1. Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from repo root **once** (combined `--json --paths-only` mode / `-Json -PathsOnly`). Parse minimal JSON payload fields:
+1. Execute `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` a partir da raiz do repositório **uma única vez** (modo combinado `--json --paths-only` / `-Json -PathsOnly`). Interprete os campos mínimos do payload JSON:
    - `FEATURE_DIR`
    - `FEATURE_SPEC`
-   - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
-   - If JSON parsing fails, abort and instruct user to re-run `/speckit-specify` or verify feature branch environment.
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+   - (Opcionalmente capture `IMPL_PLAN`, `TASKS` para fluxos encadeados futuros.)
+   - Se a interpretação do JSON falhar, aborte e instrua o usuário a executar novamente `/speckit-specify` ou a verificar o ambiente da branch da funcionalidade.
+   - Para aspas simples em argumentos como "I'm Groot", use a sintaxe de escape: por exemplo 'I'\''m Groot' (ou aspas duplas, se possível: "I'm Groot").
 
-2. **IF EXISTS**: Load `.specify/memory/constitution.md` for project principles and governance constraints.
+2. **SE EXISTIR**: Carregue `.specify/memory/constitution.md` para obter os princípios do projeto e as restrições de governança.
 
-3. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
+3. Carregue o arquivo da especificação atual. Execute uma varredura estruturada de ambiguidade e cobertura usando esta taxonomia. Para cada categoria, marque o status: Claro / Parcial / Ausente. Produza um mapa de cobertura interno usado para priorização (não exiba o mapa bruto, a menos que nenhuma pergunta vá ser feita).
 
-   Functional Scope & Behavior:
-   - Core user goals & success criteria
-   - Explicit out-of-scope declarations
-   - User roles / personas differentiation
+   Escopo Funcional e Comportamento:
+   - Objetivos centrais do usuário e critérios de sucesso
+   - Declarações explícitas de fora do escopo
+   - Diferenciação de papéis / personas de usuário
 
-   Domain & Data Model:
-   - Entities, attributes, relationships
-   - Identity & uniqueness rules
-   - Lifecycle/state transitions
-   - Data volume / scale assumptions
+   Domínio e Modelo de Dados:
+   - Entidades, atributos, relacionamentos
+   - Regras de identidade e unicidade
+   - Ciclo de vida / transições de estado
+   - Premissas de volume / escala de dados
 
-   Interaction & UX Flow:
-   - Critical user journeys / sequences
-   - Error/empty/loading states
-   - Accessibility or localization notes
+   Fluxo de Interação e UX:
+   - Jornadas / sequências críticas do usuário
+   - Estados de erro/vazio/carregamento
+   - Notas de acessibilidade ou localização
 
-   Non-Functional Quality Attributes:
-   - Performance (latency, throughput targets)
-   - Scalability (horizontal/vertical, limits)
-   - Reliability & availability (uptime, recovery expectations)
-   - Observability (logging, metrics, tracing signals)
-   - Security & privacy (authN/Z, data protection, threat assumptions)
-   - Compliance / regulatory constraints (if any)
+   Atributos de Qualidade Não Funcionais:
+   - Desempenho (latência, metas de vazão)
+   - Escalabilidade (horizontal/vertical, limites)
+   - Confiabilidade e disponibilidade (uptime, expectativas de recuperação)
+   - Observabilidade (sinais de logging, métricas, tracing)
+   - Segurança e privacidade (autenticação/autorização, proteção de dados, premissas de ameaça)
+   - Restrições de conformidade / regulatórias (se houver)
 
-   Integration & External Dependencies:
-   - External services/APIs and failure modes
-   - Data import/export formats
-   - Protocol/versioning assumptions
+   Integração e Dependências Externas:
+   - Serviços/APIs externos e modos de falha
+   - Formatos de importação/exportação de dados
+   - Premissas de protocolo/versionamento
 
-   Edge Cases & Failure Handling:
-   - Negative scenarios
-   - Rate limiting / throttling
-   - Conflict resolution (e.g., concurrent edits)
+   Casos de Borda e Tratamento de Falhas:
+   - Cenários negativos
+   - Limitação de taxa / throttling
+   - Resolução de conflitos (por exemplo, edições concorrentes)
 
-   Constraints & Tradeoffs:
-   - Technical constraints (language, storage, hosting)
-   - Explicit tradeoffs or rejected alternatives
+   Restrições e Trade-offs:
+   - Restrições técnicas (linguagem, armazenamento, hospedagem)
+   - Trade-offs explícitos ou alternativas rejeitadas
 
-   Terminology & Consistency:
-   - Canonical glossary terms
-   - Avoided synonyms / deprecated terms
+   Terminologia e Consistência:
+   - Termos canônicos do glossário
+   - Sinônimos evitados / termos obsoletos
 
-   Completion Signals:
-   - Acceptance criteria testability
-   - Measurable Definition of Done style indicators
+   Sinais de Conclusão:
+   - Testabilidade dos critérios de aceitação
+   - Indicadores mensuráveis no estilo Definição de Pronto
 
-   Misc / Placeholders:
-   - TODO markers / unresolved decisions
-   - Ambiguous adjectives ("robust", "intuitive") lacking quantification
+   Diversos / Placeholders:
+   - Marcadores TODO / decisões não resolvidas
+   - Adjetivos ambíguos ("robusto", "intuitivo") sem quantificação
 
-   For each category with Partial or Missing status, add a candidate question opportunity unless:
-   - Clarification would not materially change implementation or validation strategy
-   - The item is specifically about implementation method, tech-stack comparison, or task breakdown (note internally)
+   Para cada categoria com status Parcial ou Ausente, adicione uma oportunidade de pergunta candidata, a menos que:
+   - O esclarecimento não altere materialmente a estratégia de implementação ou de validação
+   - O item trate especificamente de método de implementação, comparação de stack tecnológica ou decomposição de tarefas (anote internamente)
 
-4. Generate (internally) a prioritized queue of candidate clarification questions (maximum 5). Do NOT output them all at once. Apply these constraints:
-    - Maximum of 5 total questions across the whole session.
-    - Each question must be answerable with EITHER:
-       - A short multiple‑choice selection (2–5 distinct, mutually exclusive options), OR
-       - A one-word / short‑phrase answer (explicitly constrain: "Answer in <=5 words").
-    - Only include questions whose answers materially impact architecture, data modeling, task decomposition, test design, UX behavior, operational readiness, or compliance validation.
-    - Ensure category coverage balance: attempt to cover the highest impact unresolved categories first; avoid asking two low-impact questions when a single high-impact area (e.g., security posture) is unresolved.
-    - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
-    - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
-    - If more than 5 categories remain unresolved, select the top 5 by (Impact * Uncertainty) heuristic.
+4. Gere (internamente) uma fila priorizada de perguntas de esclarecimento candidatas (máximo de 5). NÃO as exiba todas de uma vez. Aplique estas restrições:
+    - Máximo de 5 perguntas no total em toda a sessão.
+    - Cada pergunta deve ser respondível com UMA das opções:
+       - Uma seleção curta de múltipla escolha (2–5 opções distintas e mutuamente exclusivas), OU
+       - Uma resposta de uma palavra / frase curta (restrinja explicitamente: "Responda em <=5 palavras").
+    - Inclua apenas perguntas cujas respostas impactem materialmente arquitetura, modelagem de dados, decomposição de tarefas, design de testes, comportamento de UX, prontidão operacional ou validação de conformidade.
+    - Garanta o equilíbrio de cobertura entre categorias: tente cobrir primeiro as categorias não resolvidas de maior impacto; evite fazer duas perguntas de baixo impacto quando uma única área de alto impacto (por exemplo, postura de segurança) estiver sem resolução.
+    - Exclua perguntas já respondidas, preferências estilísticas triviais ou detalhes de execução em nível de plano (a menos que bloqueiem a correção).
+    - Favoreça esclarecimentos que reduzam o risco de retrabalho posterior ou evitem testes de aceitação desalinhados.
+    - Se mais de 5 categorias permanecerem sem resolução, selecione as 5 principais pela heurística (Impacto * Incerteza).
 
-5. Sequential questioning loop (interactive):
-    - Present EXACTLY ONE question at a time.
-    - **Question writing quality (applies to every question, MC or short-answer):**
-       - Lead with `**Question:**` followed by a full interrogative that ends with `?`. The question text before the `?` must make sense on its own.
-       - NEVER use a topic label, section heading, or requirement id as the question itself. For example, `Acceptance device/runtime matrix (FR-023)` is INVALID — it is a label, not a question.
-       - After the `?`, the only permitted suffix is an optional parenthesized requirement/question id. Exact format: `**Question:** <interrogative>?` or `**Question:** <interrogative>? (FR-023)`. Never put the id before the `?`, and never use the id (alone or with a topic label) as the whole prompt.
-       - Immediately after the question line, add one plain-language "Why it matters" sentence (the stake for acceptance or shipping) before the recommendation/options.
-       - Use everyday wording; introduce jargon only if defined in the same sentence. Self-check: a reader who does not know Spec Kit must be able to answer from the Question line alone. Terse is fine; cryptic labels are not.
-    - For multiple‑choice questions:
-       - **Analyze all options** and determine the **most suitable option** based on:
-          - Best practices for the project type
-          - Common patterns in similar implementations
-          - Risk reduction (security, performance, maintainability)
-          - Alignment with any explicit project goals or constraints visible in the spec
-       - Present your **recommended option prominently** at the top with clear reasoning (1-2 sentences explaining why this is the best choice).
-       - Format as: `**Recommended:** Option [X] - <reasoning>`
-       - Then render all options as a Markdown table:
+5. Laço de perguntas sequencial (interativo):
+    - Apresente EXATAMENTE UMA pergunta por vez.
+    - **Qualidade da redação das perguntas (aplica-se a todas as perguntas, de múltipla escolha ou resposta curta):**
+       - Comece com `**Pergunta:**` seguido de uma frase interrogativa completa que termine com `?`. O texto da pergunta antes do `?` deve fazer sentido por si só.
+       - NUNCA use um rótulo de tópico, título de seção ou id de requisito como a própria pergunta. Por exemplo, `Matriz de dispositivos/runtime de aceitação (FR-023)` é INVÁLIDO — é um rótulo, não uma pergunta.
+       - Após o `?`, o único sufixo permitido é um id de requisito/pergunta opcional entre parênteses. Formato exato: `**Pergunta:** <interrogativa>?` ou `**Pergunta:** <interrogativa>? (FR-023)`. Nunca coloque o id antes do `?` e nunca use o id (sozinho ou com um rótulo de tópico) como o prompt inteiro.
+       - Imediatamente após a linha da pergunta, adicione uma frase em linguagem simples "Por que isso importa" (o que está em jogo para a aceitação ou a entrega) antes da recomendação/opções.
+       - Use palavras do dia a dia; introduza jargão somente se for definido na mesma frase. Autoverificação: um leitor que não conhece o Spec Kit deve conseguir responder apenas a partir da linha da Pergunta. Ser conciso é aceitável; rótulos enigmáticos não.
+    - Para perguntas de múltipla escolha:
+       - **Analise todas as opções** e determine a **opção mais adequada** com base em:
+          - Melhores práticas para o tipo de projeto
+          - Padrões comuns em implementações semelhantes
+          - Redução de risco (segurança, desempenho, manutenibilidade)
+          - Alinhamento com quaisquer objetivos ou restrições explícitos do projeto visíveis na especificação
+       - Apresente sua **opção recomendada em destaque** no topo, com justificativa clara (1-2 frases explicando por que é a melhor escolha).
+       - Formato: `**Recomendada:** Opção [X] - <justificativa>`
+       - Em seguida, renderize todas as opções como uma tabela Markdown:
 
-       | Option | Description |
+       | Opção | Descrição |
        |--------|-------------|
-       | A | <Option A description> |
-       | B | <Option B description> |
-       | C | <Option C description> (add D/E as needed up to 5) |
-       | Short | Provide a different short answer (<=5 words) (Include only if free-form alternative is appropriate) |
+       | A | <Descrição da Opção A> |
+       | B | <Descrição da Opção B> |
+       | C | <Descrição da Opção C> (adicione D/E conforme necessário, até 5) |
+       | Curta | Forneça uma resposta curta diferente (<=5 palavras) (Inclua somente se uma alternativa de resposta livre for apropriada) |
 
-       - After the table, add: `You can reply with the option letter (e.g., "A"), accept the recommendation by saying "yes" or "recommended", or provide your own short answer.`
-    - For short‑answer style (no meaningful discrete options):
-       - Provide your **suggested answer** based on best practices and context.
-       - Format as: `**Suggested:** <your proposed answer> - <brief reasoning>`
-       - Then output: `Format: Short answer (<=5 words). You can accept the suggestion by saying "yes" or "suggested", or provide your own answer.`
-    - After the user answers:
-       - If the user replies with "yes", "recommended", or "suggested", use your previously stated recommendation/suggestion as the answer.
-       - Otherwise, validate the answer maps to one option or fits the <=5 word constraint.
-       - If ambiguous, ask for a quick disambiguation (count still belongs to same question; do not advance).
-       - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
-    - Stop asking further questions when:
-       - All critical ambiguities resolved early (remaining queued items become unnecessary), OR
-       - User signals completion ("done", "good", "no more"), OR
-       - You reach 5 asked questions.
-    - Never reveal future queued questions in advance.
-    - If no valid questions exist at start, immediately report no critical ambiguities.
+       - Após a tabela, adicione: `Você pode responder com a letra da opção (por exemplo, "A"), aceitar a recomendação dizendo "sim" ou "recomendada", ou fornecer sua própria resposta curta.`
+    - Para o estilo de resposta curta (sem opções discretas significativas):
+       - Forneça sua **resposta sugerida** com base em melhores práticas e no contexto.
+       - Formato: `**Sugerida:** <sua resposta proposta> - <breve justificativa>`
+       - Em seguida, exiba: `Formato: Resposta curta (<=5 palavras). Você pode aceitar a sugestão dizendo "sim" ou "sugerida", ou fornecer sua própria resposta.`
+    - Depois que o usuário responder:
+       - Se o usuário responder "sim", "recomendada" ou "sugerida", use a recomendação/sugestão que você declarou anteriormente como a resposta.
+       - Caso contrário, valide se a resposta corresponde a uma das opções ou se respeita a restrição de <=5 palavras.
+       - Se for ambígua, peça uma desambiguação rápida (a contagem continua pertencendo à mesma pergunta; não avance).
+       - Quando satisfatória, registre-a na memória de trabalho (ainda não grave em disco) e passe para a próxima pergunta da fila.
+    - Pare de fazer novas perguntas quando:
+       - Todas as ambiguidades críticas forem resolvidas cedo (os itens restantes da fila se tornam desnecessários), OU
+       - O usuário sinalizar conclusão ("pronto", "bom", "chega", "sem mais"), OU
+       - Você atingir 5 perguntas feitas.
+    - Nunca revele antecipadamente as perguntas futuras da fila.
+    - Se não existirem perguntas válidas no início, informe imediatamente que não há ambiguidades críticas.
 
-6. Integration after EACH accepted answer (incremental update approach):
-    - Maintain in-memory representation of the spec (loaded once at start) plus the raw file contents.
-    - For the first integrated answer in this session:
-       - Ensure a `## Clarifications` section exists (create it just after the highest-level contextual/overview section per the spec template if missing).
-       - Under it, create (if not present) a `### Session YYYY-MM-DD` subheading for today.
-    - Append a bullet line immediately after acceptance: `- Q: <question> → A: <final answer>`.
-    - Then immediately apply the clarification to the most appropriate section(s):
-       - Functional ambiguity → Update or add a bullet in Functional Requirements.
-       - User interaction / actor distinction → Update User Stories or Actors subsection (if present) with clarified role, constraint, or scenario.
-       - Data shape / entities → Update Data Model (add fields, types, relationships) preserving ordering; note added constraints succinctly.
-       - Non-functional constraint → Add/modify measurable criteria in Success Criteria > Measurable Outcomes (convert vague adjective to metric or explicit target).
-       - Edge case / negative flow → Add a new bullet under Edge Cases / Error Handling (or create such subsection if template provides placeholder for it).
-       - Terminology conflict → Normalize term across spec; retain original only if necessary by adding `(formerly referred to as "X")` once.
-    - If the clarification invalidates an earlier ambiguous statement, replace that statement instead of duplicating; leave no obsolete contradictory text.
-    - Save the spec file AFTER each integration to minimize risk of context loss (atomic overwrite).
-    - Preserve formatting: do not reorder unrelated sections; keep heading hierarchy intact.
-    - Keep each inserted clarification minimal and testable (avoid narrative drift).
+6. Integração após CADA resposta aceita (abordagem de atualização incremental):
+    - Mantenha uma representação em memória da especificação (carregada uma vez no início) mais o conteúdo bruto do arquivo.
+    - Para a primeira resposta integrada nesta sessão:
+       - Garanta que exista uma seção `## Esclarecimentos` (crie-a logo após a seção contextual/de visão geral de nível mais alto, conforme o template da especificação, se estiver ausente).
+       - Sob ela, crie (se não existir) um subtítulo `### Sessão AAAA-MM-DD` para hoje.
+    - Acrescente uma linha de marcador imediatamente após a aceitação: `- P: <pergunta> → R: <resposta final>`.
+    - Em seguida, aplique imediatamente o esclarecimento à(s) seção(ões) mais apropriada(s):
+       - Ambiguidade funcional → Atualize ou adicione um marcador em Requisitos Funcionais.
+       - Interação do usuário / distinção de atores → Atualize as Histórias de Usuário ou a subseção de Atores (se presente) com o papel, a restrição ou o cenário esclarecido.
+       - Formato de dados / entidades → Atualize o Modelo de Dados (adicione campos, tipos, relacionamentos) preservando a ordem; anote as restrições adicionadas de forma sucinta.
+       - Restrição não funcional → Adicione/modifique critérios mensuráveis em Critérios de Sucesso > Resultados Mensuráveis (converta adjetivos vagos em métrica ou meta explícita).
+       - Caso de borda / fluxo negativo → Adicione um novo marcador em Casos de Borda / Tratamento de Erros (ou crie essa subseção se o template fornecer um placeholder para ela).
+       - Conflito de terminologia → Normalize o termo em toda a especificação; mantenha o original somente se necessário, adicionando `(anteriormente chamado de "X")` uma única vez.
+    - Se o esclarecimento invalidar uma afirmação ambígua anterior, substitua essa afirmação em vez de duplicá-la; não deixe texto obsoleto e contraditório.
+    - Salve o arquivo da especificação APÓS cada integração para minimizar o risco de perda de contexto (sobrescrita atômica).
+    - Preserve a formatação: não reordene seções não relacionadas; mantenha a hierarquia de títulos intacta.
+    - Mantenha cada esclarecimento inserido mínimo e testável (evite divagação narrativa).
 
-7. Validation (performed after EACH write plus final pass):
-   - Clarifications session contains exactly one bullet per accepted answer (no duplicates).
-   - Total asked (accepted) questions ≤ 5.
-   - Updated sections contain no lingering vague placeholders the new answer was meant to resolve.
-   - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
-   - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
-   - Terminology consistency: same canonical term used across all updated sections.
+7. Validação (executada após CADA gravação, além de uma passagem final):
+   - A sessão de Esclarecimentos contém exatamente um marcador por resposta aceita (sem duplicatas).
+   - Total de perguntas feitas (aceitas) ≤ 5.
+   - As seções atualizadas não contêm placeholders vagos remanescentes que a nova resposta deveria resolver.
+   - Nenhuma afirmação anterior contraditória permanece (verifique se escolhas alternativas agora inválidas foram removidas).
+   - Estrutura Markdown válida; os únicos novos títulos permitidos: `## Esclarecimentos`, `### Sessão AAAA-MM-DD`.
+   - Consistência de terminologia: o mesmo termo canônico é usado em todas as seções atualizadas.
 
-8. Write the updated spec back to `FEATURE_SPEC`.
+8. Grave a especificação atualizada de volta em `FEATURE_SPEC`.
 
-9. **Re-validate Spec Quality Checklist** (if it exists):
-   - Check if `FEATURE_DIR/checklists/requirements.md` exists.
-   - If it does NOT exist, skip this step silently.
-   - If it exists:
-     1. Read the checklist file.
-     2. Identify all GitHub task-list checkbox lines — lines matching `- [ ]`, `- [x]`, or `- [X]` (case-insensitive, tolerant of leading whitespace for nested items) outside of code fences. Ignore all other content (headings, notes, non-checkbox bullets, metadata).
-     3. For each checkbox line, record its current marker state (checked or unchecked) and item text into a before-snapshot list.
-     4. Re-evaluate each checkbox item against the **updated** spec (the version just saved in step 7).
-     5. For each checkbox item, update only if the checked/unchecked state actually changes:
-        - If the item now passes and was unchecked: change `[ ]` to `[x]`.
-        - If the item now fails and was checked: change `[x]`/`[X]` to `[ ]`.
-        - If the state is unchanged: leave the marker as-is (preserve existing case to avoid cosmetic diffs).
-     6. Save the updated checklist file. **Only toggle the `[ ]`/`[x]` marker portion of checkbox lines whose state changed.** All other file content — headings, metadata, notes, line ordering, whitespace — must remain unchanged to avoid noisy diffs.
-     7. Compare the before-snapshot with the current state to compute three lists for the Completion Report:
-        - **Newly passing**: items that changed from unchecked to checked.
-        - **Regressions**: items that changed from checked to unchecked.
-        - **Still unchecked**: items that remain unchecked.
-     8. Record the before/after pass counts as checked/total checkbox items (e.g., "12/16 → 15/16 items passing").
+9. **Revalide o Checklist de Qualidade da Especificação** (se existir):
+   - Verifique se `FEATURE_DIR/checklists/requirements.md` existe.
+   - Se NÃO existir, ignore esta etapa silenciosamente.
+   - Se existir:
+     1. Leia o arquivo de checklist.
+     2. Identifique todas as linhas de checkbox de lista de tarefas do GitHub — linhas que correspondam a `- [ ]`, `- [x]` ou `- [X]` (sem diferenciar maiúsculas de minúsculas, tolerando espaços iniciais para itens aninhados) fora de blocos de código. Ignore todo o outro conteúdo (títulos, notas, marcadores que não sejam checkbox, metadados).
+     3. Para cada linha de checkbox, registre o estado atual do marcador (marcado ou desmarcado) e o texto do item em uma lista de snapshot anterior.
+     4. Reavalie cada item de checkbox em relação à especificação **atualizada** (a versão que acabou de ser salva na etapa 7).
+     5. Para cada item de checkbox, atualize somente se o estado marcado/desmarcado de fato mudar:
+        - Se o item agora passa e estava desmarcado: altere `[ ]` para `[x]`.
+        - Se o item agora falha e estava marcado: altere `[x]`/`[X]` para `[ ]`.
+        - Se o estado não mudou: deixe o marcador como está (preserve a caixa original para evitar diffs cosméticos).
+     6. Salve o arquivo de checklist atualizado. **Alterne somente a parte do marcador `[ ]`/`[x]` das linhas de checkbox cujo estado mudou.** Todo o outro conteúdo do arquivo — títulos, metadados, notas, ordem das linhas, espaçamento — deve permanecer inalterado para evitar diffs ruidosos.
+     7. Compare o snapshot anterior com o estado atual para calcular três listas para o Relatório de Conclusão:
+        - **Passaram agora**: itens que mudaram de desmarcado para marcado.
+        - **Regressões**: itens que mudaram de marcado para desmarcado.
+        - **Ainda desmarcados**: itens que permanecem desmarcados.
+     8. Registre as contagens de aprovação antes/depois como marcados/total de itens de checkbox (por exemplo, "12/16 → 15/16 itens aprovados").
 
-Behavior rules:
+Regras de comportamento:
 
-- If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
-- If spec file missing, instruct user to run `/speckit-specify` first (do not create a new spec here).
-- Never exceed 5 total asked questions (clarification retries for a single question do not count as new questions).
-- Avoid speculative tech stack questions unless the absence blocks functional clarity.
-- Respect user early termination signals ("stop", "done", "proceed").
-- If no questions asked due to full coverage, output a compact coverage summary (all categories Clear) then suggest advancing.
-- If quota reached with unresolved high-impact categories remaining, explicitly flag them under Deferred with rationale.
+- Se nenhuma ambiguidade significativa for encontrada (ou todas as perguntas potenciais forem de baixo impacto), responda: "Nenhuma ambiguidade crítica detectada que justifique um esclarecimento formal." e sugira prosseguir.
+- Se o arquivo da especificação estiver ausente, instrua o usuário a executar `/speckit-specify` primeiro (não crie uma nova especificação aqui).
+- Nunca exceda 5 perguntas feitas no total (novas tentativas de esclarecimento para uma única pergunta não contam como novas perguntas).
+- Evite perguntas especulativas sobre a stack tecnológica, a menos que sua ausência bloqueie a clareza funcional.
+- Respeite os sinais de encerramento antecipado do usuário ("pare", "pronto", "prossiga").
+- Se nenhuma pergunta for feita por cobertura completa, exiba um resumo compacto de cobertura (todas as categorias Claras) e sugira avançar.
+- Se a cota for atingida com categorias de alto impacto ainda sem resolução, sinalize-as explicitamente em Adiadas, com a justificativa.
 
-Context for prioritization: $ARGUMENTS
+Contexto para priorização: $ARGUMENTS
 
-## Mandatory Post-Execution Hooks
+## Hooks Obrigatórios Pós-Execução
 
-**You MUST complete this section before reporting completion to the user.**
+**Você DEVE concluir esta seção antes de relatar a conclusão ao usuário.**
 
-Check if `.specify/extensions.yml` exists in the project root.
-- If it does not exist, or no hooks are registered under `hooks.after_clarify`, skip to the Completion Report.
-- If it exists, read it and look for entries under the `hooks.after_clarify` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
-- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` → `/speckit-git-commit`.
-- For each executable hook, output the following based on its `optional` flag:
-  - **Mandatory hook** (`optional: false`) — **You MUST emit `EXECUTE_COMMAND:` for each mandatory hook**:
+Verifique se `.specify/extensions.yml` existe na raiz do projeto.
+- Se não existir, ou se nenhum hook estiver registrado sob `hooks.after_clarify`, vá direto para o Relatório de Conclusão.
+- Se existir, leia-o e procure entradas sob a chave `hooks.after_clarify`.
+- Se o YAML não puder ser interpretado ou for inválido, não ignore silenciosamente: informe ao usuário que `.specify/extensions.yml` não pôde ser lido (inclua o erro do parser) e que nenhum hook foi verificado, incluindo quaisquer hooks obrigatórios (`optional: false`) registrados ali, e então continue para o Relatório de Conclusão.
+- Ignore os hooks em que `enabled` seja explicitamente `false`. Trate hooks sem o campo `enabled` como habilitados por padrão.
+- Para cada hook restante, **não** tente interpretar ou avaliar as expressões de `condition` do hook:
+  - Se o hook não tiver o campo `condition`, ou ele for nulo/vazio, trate o hook como executável
+  - Se o hook definir uma `condition` não vazia, ignore o hook e deixe a avaliação da condição para a implementação do HookExecutor
+- Ao construir invocações de comando a partir dos nomes de comando dos hooks, substitua pontos (`.`) por hífens (`-`). Por exemplo, `speckit.git.commit` → `/speckit-git-commit`.
+- Para cada hook executável, produza a saída a seguir de acordo com o flag `optional`:
+  - **Hook obrigatório** (`optional: false`) — **Você DEVE emitir `EXECUTE_COMMAND:` para cada hook obrigatório**:
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Automatic Hook**: {extension}
-    Executing: `/{command}`
+    **Hook Automático**: {extension}
+    Executando: `/{command}`
     EXECUTE_COMMAND: {command}
     ```
-    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
-  - **Optional hook** (`optional: true`):
+    Após emitir o bloco acima, você DEVE de fato invocar o hook e aguardar sua conclusão antes de continuar. Execute-o da mesma forma que executaria o comando por conta própria neste agente/sessão (a invocação pode diferir do id literal `{command}` mostrado acima, por exemplo, um agente em modo skills o executa como `/skill:speckit-...` ou `$speckit-...`). Apenas emitir o bloco não executa o hook.
+  - **Hook opcional** (`optional: true`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Optional Hook**: {extension}
-    Command: `/{command}`
-    Description: {description}
+    **Hook Opcional**: {extension}
+    Comando: `/{command}`
+    Descrição: {description}
 
     Prompt: {prompt}
-    To execute: `/{command}`
+    Para executar: `/{command}`
     ```
 
-## Completion Report
+## Relatório de Conclusão
 
-Report completion (after questioning loop ends or early termination):
-- Number of questions asked & answered.
-- Path to updated spec.
-- Sections touched (list names).
-- Spec quality checklist status (if `FEATURE_DIR/checklists/requirements.md` was re-validated): show before/after pass counts (e.g., "Spec Quality Checklist: 12/16 → 15/16 items passing") and list any items that changed state — both newly checked (unchecked → checked) and any regressions (checked → unchecked). If any items remain unchecked, list them as areas needing attention.
-- Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (exceeds question quota, or remaining item is specifically implementation method, tech-stack comparison, or task breakdown), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
-- If any Outstanding or Deferred remain, recommend whether to proceed to `/speckit-plan` or run `/speckit-clarify` again later post-plan.
-- Suggested next command.
+Relate a conclusão (após o fim do laço de perguntas ou encerramento antecipado):
+- Número de perguntas feitas e respondidas.
+- Caminho da especificação atualizada.
+- Seções alteradas (liste os nomes).
+- Status do checklist de qualidade da especificação (se `FEATURE_DIR/checklists/requirements.md` foi revalidado): mostre as contagens de aprovação antes/depois (por exemplo, "Checklist de Qualidade da Especificação: 12/16 → 15/16 itens aprovados") e liste quaisquer itens que mudaram de estado — tanto os recém-marcados (desmarcado → marcado) quanto quaisquer regressões (marcado → desmarcado). Se algum item permanecer desmarcado, liste-o como área que precisa de atenção.
+- Tabela de resumo de cobertura listando cada categoria da taxonomia com Status: Resolvida (estava Parcial/Ausente e foi tratada), Adiada (excede a cota de perguntas, ou o item restante trata especificamente de método de implementação, comparação de stack tecnológica ou decomposição de tarefas), Clara (já suficiente), Pendente (ainda Parcial/Ausente, mas de baixo impacto).
+- Se restarem itens Pendentes ou Adiados, recomende se deve prosseguir para `/speckit-plan` ou executar `/speckit-clarify` novamente mais tarde, após o plano.
+- Próximo comando sugerido.
 
-## Done When
+## Concluído Quando
 
-- [ ] Spec ambiguities identified and clarifications integrated into spec file
-- [ ] Spec quality checklist re-validated against updated spec (if `FEATURE_DIR/checklists/requirements.md` exists)
-- [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
-- [ ] Completion reported to user with questions answered, sections touched, checklist status, and coverage summary
+- [ ] Ambiguidades da especificação identificadas e esclarecimentos integrados ao arquivo da especificação
+- [ ] Checklist de qualidade da especificação revalidado em relação à especificação atualizada (se `FEATURE_DIR/checklists/requirements.md` existir)
+- [ ] Hooks de extensão despachados ou ignorados conforme as regras em Hooks Obrigatórios Pós-Execução acima
+- [ ] Conclusão relatada ao usuário com as perguntas respondidas, seções alteradas, status do checklist e resumo de cobertura

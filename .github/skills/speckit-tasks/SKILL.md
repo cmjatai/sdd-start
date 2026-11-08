@@ -1,6 +1,6 @@
 ---
 name: "speckit-tasks"
-description: "Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts."
+description: "Gera um tasks.md acionável e ordenado por dependências para a funcionalidade, com base nos artefatos de design disponíveis."
 compatibility: "Requires spec-kit project structure with .specify/ directory"
 metadata:
   author: "github-spec-kit"
@@ -8,208 +8,208 @@ metadata:
 ---
 
 
-## User Input
+## Entrada do Usuário
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+Você **DEVE** considerar a entrada do usuário antes de prosseguir (se não estiver vazia).
 
-## Pre-Execution Checks
+## Verificações Pré-Execução
 
-**Check for extension hooks (before tasks generation)**:
-- Check if `.specify/extensions.yml` exists in the project root.
-- If it exists, read it and look for entries under the `hooks.before_tasks` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
-- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` → `/speckit-git-commit`.
-- For each executable hook, output the following based on its `optional` flag:
-  - **Optional hook** (`optional: true`):
+**Verifique a existência de hooks de extensão (antes da geração de tarefas)**:
+- Verifique se `.specify/extensions.yml` existe na raiz do projeto.
+- Se existir, leia-o e procure entradas na chave `hooks.before_tasks`
+- Se o YAML não puder ser interpretado ou for inválido, não ignore silenciosamente: informe ao usuário que `.specify/extensions.yml` não pôde ser lido (inclua o erro do parser) e que nenhum hook foi verificado, incluindo quaisquer hooks obrigatórios (`optional: false`) registrados ali, e então continue normalmente
+- Filtre os hooks em que `enabled` seja explicitamente `false`. Trate hooks sem o campo `enabled` como habilitados por padrão.
+- Para cada hook restante, **não** tente interpretar ou avaliar expressões `condition` do hook:
+  - Se o hook não tiver o campo `condition`, ou ele for nulo/vazio, trate o hook como executável
+  - Se o hook definir um `condition` não vazio, ignore o hook e deixe a avaliação da condição para a implementação do HookExecutor
+- Ao construir invocações de comando a partir dos nomes de comando dos hooks, substitua pontos (`.`) por hifens (`-`). Por exemplo, `speckit.git.commit` → `/speckit-git-commit`.
+- Para cada hook executável, produza a saída a seguir conforme o seu flag `optional`:
+  - **Hook opcional** (`optional: true`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Optional Pre-Hook**: {extension}
-    Command: `/{command}`
-    Description: {description}
+    **Pré-Hook Opcional**: {extension}
+    Comando: `/{command}`
+    Descrição: {description}
 
     Prompt: {prompt}
-    To execute: `/{command}`
+    Para executar: `/{command}`
     ```
-  - **Mandatory hook** (`optional: false`):
+  - **Hook obrigatório** (`optional: false`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Automatic Pre-Hook**: {extension}
-    Executing: `/{command}`
+    **Pré-Hook Automático**: {extension}
+    Executando: `/{command}`
     EXECUTE_COMMAND: {command}
 
-    Wait for the result of the hook command before proceeding to the Outline.
+    Aguarde o resultado do comando do hook antes de prosseguir para o Roteiro.
     ```
-    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
-- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+    Depois de emitir o bloco acima, você DEVE de fato invocar o hook e aguardar sua conclusão antes de continuar. Execute-o da mesma forma que você executaria o comando por conta própria neste agente/sessão (a invocação pode diferir do id literal `{command}` exibido acima, por exemplo, um agente em modo de skills o executa como `/skill:speckit-...` ou `$speckit-...`). Apenas emitir o bloco não executa o hook.
+- Se nenhum hook estiver registrado ou `.specify/extensions.yml` não existir, ignore silenciosamente
 
-## Outline
+## Roteiro
 
-1. **Setup**: Run `.specify/scripts/bash/setup-tasks.sh --json` from repo root and parse FEATURE_DIR, TASKS_TEMPLATE_CONTENT, TASKS_TEMPLATE, and AVAILABLE_DOCS list. `FEATURE_DIR` and `TASKS_TEMPLATE` must be absolute paths when provided. `AVAILABLE_DOCS` is a list of document names/relative paths available under `FEATURE_DIR` (for example `research.md` or `contracts/`). For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Preparação**: Execute `.specify/scripts/bash/setup-tasks.sh --json` a partir da raiz do repositório e interprete FEATURE_DIR, TASKS_TEMPLATE_CONTENT, TASKS_TEMPLATE e a lista AVAILABLE_DOCS. `FEATURE_DIR` e `TASKS_TEMPLATE` devem ser caminhos absolutos quando fornecidos. `AVAILABLE_DOCS` é uma lista de nomes/caminhos relativos de documentos disponíveis em `FEATURE_DIR` (por exemplo, `research.md` ou `contracts/`). Para aspas simples em argumentos como "I'm Groot", use a sintaxe de escape: por exemplo, 'I'\''m Groot' (ou aspas duplas, se possível: "I'm Groot").
 
-2. **Load design documents**: Read from FEATURE_DIR:
-   - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
-   - **Optional**: data-model.md (entities), contracts/ (interface contracts), research.md (decisions), quickstart.md (test scenarios)
-   - **IF EXISTS**: Load `.specify/memory/constitution.md` for project principles and governance constraints
-   - Note: Not all projects have all documents. Generate tasks based on what's available.
+2. **Carregar os documentos de design**: Leia de FEATURE_DIR:
+   - **Obrigatórios**: plan.md (stack tecnológica, bibliotecas, estrutura), spec.md (histórias de usuário com prioridades)
+   - **Opcionais**: data-model.md (entidades), contracts/ (contratos de interface), research.md (decisões), quickstart.md (cenários de teste)
+   - **SE EXISTIR**: Carregue `.specify/memory/constitution.md` para os princípios do projeto e restrições de governança
+   - Observação: Nem todos os projetos têm todos os documentos. Gere as tarefas com base no que estiver disponível.
 
-3. **Execute task generation workflow**:
-   - Load plan.md and extract tech stack, libraries, project structure
-   - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)
-   - If data-model.md exists: Extract entities and map to user stories
-   - If contracts/ exists: Map interface contracts to user stories
-   - If research.md exists: Extract decisions for setup tasks
-   - Generate tasks organized by user story (see Task Generation Rules below)
-   - Generate dependency graph showing user story completion order
-   - Create parallel execution examples per user story
-   - Validate task completeness (each user story has all needed tasks, independently testable)
+3. **Executar o fluxo de geração de tarefas**:
+   - Carregue plan.md e extraia a stack tecnológica, as bibliotecas e a estrutura do projeto
+   - Carregue spec.md e extraia as histórias de usuário com suas prioridades (P1, P2, P3 etc.)
+   - Se data-model.md existir: extraia as entidades e mapeie-as para as histórias de usuário
+   - Se contracts/ existir: mapeie os contratos de interface para as histórias de usuário
+   - Se research.md existir: extraia as decisões para as tarefas de preparação
+   - Gere as tarefas organizadas por história de usuário (veja as Regras de Geração de Tarefas abaixo)
+   - Gere o grafo de dependências mostrando a ordem de conclusão das histórias de usuário
+   - Crie exemplos de execução paralela por história de usuário
+   - Valide a completude das tarefas (cada história de usuário tem todas as tarefas necessárias e é testável de forma independente)
 
-4. **Generate tasks.md**: Use TASKS_TEMPLATE_CONTENT (from the JSON output above) as the structure. For compatibility with older setup scripts that omit TASKS_TEMPLATE_CONTENT, read TASKS_TEMPLATE instead. Fill with:
-   - Correct feature name from plan.md
-   - Phase 1: Setup tasks (project initialization)
-   - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
-   - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
-   - Final Phase: Polish & cross-cutting concerns
-   - All tasks must follow the strict checklist format (see Task Generation Rules below)
-   - Clear file paths for each task
-   - Dependencies section showing story completion order
-   - Parallel execution examples per story
-   - Implementation strategy section (MVP first, incremental delivery)
+4. **Gerar tasks.md**: Use TASKS_TEMPLATE_CONTENT (da saída JSON acima) como estrutura. Para compatibilidade com scripts de preparação mais antigos que omitem TASKS_TEMPLATE_CONTENT, leia TASKS_TEMPLATE em seu lugar. Preencha com:
+   - O nome correto da funcionalidade a partir de plan.md
+   - Fase 1: tarefas de Preparação (inicialização do projeto)
+   - Fase 2: tarefas Fundacionais (pré-requisitos bloqueantes para todas as histórias de usuário)
+   - Fase 3+: uma fase por história de usuário (em ordem de prioridade de spec.md)
+   - Cada fase inclui: objetivo da história, critérios de teste independente, testes (se solicitados), tarefas de implementação
+   - Fase Final: Acabamento e preocupações transversais
+   - Todas as tarefas devem seguir o formato rigoroso de checklist (veja as Regras de Geração de Tarefas abaixo)
+   - Caminhos de arquivo claros para cada tarefa
+   - Seção de Dependências mostrando a ordem de conclusão das histórias
+   - Exemplos de execução paralela por história
+   - Seção de estratégia de implementação (MVP primeiro, entrega incremental)
 
-## Mandatory Post-Execution Hooks
+## Hooks Obrigatórios Pós-Execução
 
-**You MUST complete this section before reporting completion to the user.**
+**Você DEVE concluir esta seção antes de relatar a conclusão ao usuário.**
 
-Check if `.specify/extensions.yml` exists in the project root.
-- If it does not exist, or no hooks are registered under `hooks.after_tasks`, skip to the Completion Report.
-- If it exists, read it and look for entries under the `hooks.after_tasks` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
-- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-- When constructing command invocations from hook command names, replace dots (`.`) with hyphens (`-`). For example, `speckit.git.commit` → `/speckit-git-commit`.
-- For each executable hook, output the following based on its `optional` flag:
-  - **Mandatory hook** (`optional: false`) — **You MUST emit `EXECUTE_COMMAND:` for each mandatory hook**:
+Verifique se `.specify/extensions.yml` existe na raiz do projeto.
+- Se não existir, ou se nenhum hook estiver registrado em `hooks.after_tasks`, vá direto para o Relatório de Conclusão.
+- Se existir, leia-o e procure entradas na chave `hooks.after_tasks`.
+- Se o YAML não puder ser interpretado ou for inválido, não ignore silenciosamente: informe ao usuário que `.specify/extensions.yml` não pôde ser lido (inclua o erro do parser) e que nenhum hook foi verificado, incluindo quaisquer hooks obrigatórios (`optional: false`) registrados ali, e então continue para o Relatório de Conclusão.
+- Filtre os hooks em que `enabled` seja explicitamente `false`. Trate hooks sem o campo `enabled` como habilitados por padrão.
+- Para cada hook restante, **não** tente interpretar ou avaliar expressões `condition` do hook:
+  - Se o hook não tiver o campo `condition`, ou ele for nulo/vazio, trate o hook como executável
+  - Se o hook definir um `condition` não vazio, ignore o hook e deixe a avaliação da condição para a implementação do HookExecutor
+- Ao construir invocações de comando a partir dos nomes de comando dos hooks, substitua pontos (`.`) por hifens (`-`). Por exemplo, `speckit.git.commit` → `/speckit-git-commit`.
+- Para cada hook executável, produza a saída a seguir conforme o seu flag `optional`:
+  - **Hook obrigatório** (`optional: false`) — **Você DEVE emitir `EXECUTE_COMMAND:` para cada hook obrigatório**:
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Automatic Hook**: {extension}
-    Executing: `/{command}`
+    **Hook Automático**: {extension}
+    Executando: `/{command}`
     EXECUTE_COMMAND: {command}
     ```
-    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
-  - **Optional hook** (`optional: true`):
+    Depois de emitir o bloco acima, você DEVE de fato invocar o hook e aguardar sua conclusão antes de continuar. Execute-o da mesma forma que você executaria o comando por conta própria neste agente/sessão (a invocação pode diferir do id literal `{command}` exibido acima, por exemplo, um agente em modo de skills o executa como `/skill:speckit-...` ou `$speckit-...`). Apenas emitir o bloco não executa o hook.
+  - **Hook opcional** (`optional: true`):
     ```
-    ## Extension Hooks
+    ## Hooks de Extensão
 
-    **Optional Hook**: {extension}
-    Command: `/{command}`
-    Description: {description}
+    **Hook Opcional**: {extension}
+    Comando: `/{command}`
+    Descrição: {description}
 
     Prompt: {prompt}
-    To execute: `/{command}`
+    Para executar: `/{command}`
     ```
 
-## Completion Report
+## Relatório de Conclusão
 
-Output path to generated tasks.md and summary:
-- Total task count
-- Task count per user story
-- Parallel opportunities identified
-- Independent test criteria for each story
-- Suggested MVP scope (typically just User Story 1)
-- Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
+Informe o caminho do tasks.md gerado e um resumo:
+- Contagem total de tarefas
+- Contagem de tarefas por história de usuário
+- Oportunidades de paralelismo identificadas
+- Critérios de teste independente de cada história
+- Escopo de MVP sugerido (tipicamente apenas a História de Usuário 1)
+- Validação de formato: confirme que TODAS as tarefas seguem o formato de checklist (caixa de seleção, ID, rótulos, caminhos de arquivo)
 
-Context for task generation: $ARGUMENTS
+Contexto para a geração de tarefas: $ARGUMENTS
 
-The tasks.md should be immediately executable - each task must be specific enough that an LLM can complete it without additional context.
+O tasks.md deve ser imediatamente executável — cada tarefa deve ser específica o bastante para que um LLM possa concluí-la sem contexto adicional.
 
-## Task Generation Rules
+## Regras de Geração de Tarefas
 
-**CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
+**CRÍTICO**: As tarefas DEVEM ser organizadas por história de usuário para permitir implementação e teste independentes.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Testes são OPCIONAIS**: Gere tarefas de teste somente se solicitado explicitamente na especificação da funcionalidade ou se o usuário pedir a abordagem TDD.
 
-### Checklist Format (REQUIRED)
+### Formato de Checklist (OBRIGATÓRIO)
 
-Every task MUST strictly follow this format:
+Toda tarefa DEVE seguir estritamente este formato:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] Description with file path
+- [ ] [TaskID] [P?] [Story?] Descrição com caminho do arquivo
 ```
 
-**Format Components**:
+**Componentes do Formato**:
 
-1. **Checkbox**: ALWAYS start with `- [ ]` (markdown checkbox)
-2. **Task ID**: Sequential number (T001, T002, T003...) in execution order
-3. **[P] marker**: Include ONLY if task is parallelizable (different files, no dependencies on incomplete tasks)
-4. **[Story] label**: REQUIRED for user story phase tasks only
-   - Format: [US1], [US2], [US3], etc. (maps to user stories from spec.md)
-   - Setup phase: NO story label
-   - Foundational phase: NO story label
-   - User Story phases: MUST have story label
-   - Polish phase: NO story label
-5. **Description**: Clear action with exact file path
+1. **Caixa de seleção**: SEMPRE comece com `- [ ]` (caixa de seleção markdown)
+2. **ID da Tarefa**: número sequencial (T001, T002, T003...) na ordem de execução
+3. **Marcador [P]**: inclua SOMENTE se a tarefa for paralelizável (arquivos diferentes, sem dependências de tarefas incompletas)
+4. **Rótulo [Story]**: OBRIGATÓRIO somente para tarefas de fases de história de usuário
+   - Formato: [US1], [US2], [US3] etc. (mapeia para as histórias de usuário de spec.md)
+   - Fase de Preparação: SEM rótulo de história
+   - Fase Fundacional: SEM rótulo de história
+   - Fases de História de Usuário: DEVEM ter rótulo de história
+   - Fase de Acabamento: SEM rótulo de história
+5. **Descrição**: ação clara com o caminho exato do arquivo
 
-**Examples**:
+**Exemplos**:
 
-- ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
-- ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
-- ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
-- ✅ CORRECT: `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
-- ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
-- ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
-- ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID)
-- ❌ WRONG: `- [ ] T001 [US1] Create model` (missing file path)
+- ✅ CORRETO: `- [ ] T001 Criar a estrutura do projeto conforme o plano de implementação`
+- ✅ CORRETO: `- [ ] T005 [P] Implementar o middleware de autenticação em src/middleware/auth.py`
+- ✅ CORRETO: `- [ ] T012 [P] [US1] Criar o modelo User em src/models/user.py`
+- ✅ CORRETO: `- [ ] T014 [US1] Implementar o UserService em src/services/user_service.py`
+- ❌ ERRADO: `- [ ] Criar o modelo User` (falta o ID e o rótulo de história)
+- ❌ ERRADO: `T001 [US1] Criar o modelo` (falta a caixa de seleção)
+- ❌ ERRADO: `- [ ] [US1] Criar o modelo User` (falta o ID da tarefa)
+- ❌ ERRADO: `- [ ] T001 [US1] Criar o modelo` (falta o caminho do arquivo)
 
-### Task Organization
+### Organização das Tarefas
 
-1. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
-   - Each user story (P1, P2, P3...) gets its own phase
-   - Map all related components to their story:
-     - Models needed for that story
-     - Services needed for that story
-     - Interfaces/UI needed for that story
-     - If tests requested: Tests specific to that story
-   - Mark story dependencies (most stories should be independent)
+1. **A partir das Histórias de Usuário (spec.md)** - ORGANIZAÇÃO PRINCIPAL:
+   - Cada história de usuário (P1, P2, P3...) recebe sua própria fase
+   - Mapeie todos os componentes relacionados à sua história:
+     - Modelos necessários para essa história
+     - Serviços necessários para essa história
+     - Interfaces/UI necessárias para essa história
+     - Se testes forem solicitados: testes específicos dessa história
+   - Marque as dependências entre histórias (a maioria das histórias deve ser independente)
 
-2. **From Contracts**:
-   - Map each interface contract → to the user story it serves
-   - If tests requested: Each interface contract → contract test task [P] before implementation in that story's phase
+2. **A partir dos Contratos**:
+   - Mapeie cada contrato de interface → para a história de usuário que ele atende
+   - Se testes forem solicitados: cada contrato de interface → tarefa de teste de contrato [P] antes da implementação na fase dessa história
 
-3. **From Data Model**:
-   - Map each entity to the user story(ies) that need it
-   - If entity serves multiple stories: Put in earliest story or Setup phase
-   - Relationships → service layer tasks in appropriate story phase
-   - For each field with constraints in data-model.md (max length, nullable/required, enum values, validation rules), quote the constraint verbatim in the task description so it is not left to implementation-time discretion
+3. **A partir do Modelo de Dados**:
+   - Mapeie cada entidade para a(s) história(s) de usuário que a necessitam
+   - Se a entidade atender a várias histórias: coloque-a na primeira história ou na fase de Preparação
+   - Relacionamentos → tarefas da camada de serviço na fase de história apropriada
+   - Para cada campo com restrições em data-model.md (tamanho máximo, nulável/obrigatório, valores de enum, regras de validação), cite a restrição literalmente na descrição da tarefa para que ela não fique a critério do momento da implementação
 
-4. **From Setup/Infrastructure**:
-   - Shared infrastructure → Setup phase (Phase 1)
-   - Foundational/blocking tasks → Foundational phase (Phase 2)
-   - Story-specific setup → within that story's phase
+4. **A partir da Preparação/Infraestrutura**:
+   - Infraestrutura compartilhada → fase de Preparação (Fase 1)
+   - Tarefas fundacionais/bloqueantes → fase Fundacional (Fase 2)
+   - Preparação específica de uma história → dentro da fase dessa história
 
-### Phase Structure
+### Estrutura das Fases
 
-- **Phase 1**: Setup (project initialization)
-- **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
-- **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
-  - Each phase should be a complete, independently testable increment
-- **Final Phase**: Polish & Cross-Cutting Concerns
+- **Fase 1**: Preparação (inicialização do projeto)
+- **Fase 2**: Fundacional (pré-requisitos bloqueantes — DEVEM ser concluídos antes das histórias de usuário)
+- **Fase 3+**: Histórias de Usuário em ordem de prioridade (P1, P2, P3...)
+  - Dentro de cada história: Testes (se solicitados) → Modelos → Serviços → Endpoints → Integração
+  - Cada fase deve ser um incremento completo e testável de forma independente
+- **Fase Final**: Acabamento e Preocupações Transversais
 
-## Done When
+## Concluído Quando
 
-- [ ] tasks.md generated with all phases, task IDs, and file paths
-- [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
-- [ ] Completion reported to user with task count, story breakdown, and MVP scope
+- [ ] tasks.md gerado com todas as fases, IDs de tarefas e caminhos de arquivos
+- [ ] Hooks de extensão despachados ou ignorados conforme as regras em Hooks Obrigatórios Pós-Execução acima
+- [ ] Conclusão relatada ao usuário com a contagem de tarefas, o detalhamento por história e o escopo de MVP
