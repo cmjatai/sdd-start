@@ -1,0 +1,16 @@
+{% extends "crud/list.html" %}
+{% load i18n menus%}
+
+{% block base_content %}
+  <div class="row container-tabaux">
+    <div class="{% if perms.eauth.menu_administracao %}col{% endif %}">
+      {{block.super}}
+    </div>
+    {% if perms.eauth.menu_administracao %}
+      <div class="sidebar-tabaux">
+          <h3>{% trans "Menu Administração" %}</h3>
+          {% subnav 'menus/menu_administracao.yaml'%}
+      </div>
+    {% endif %}
+  </div>
+{% endblock base_content %}

@@ -1,0 +1,37 @@
+from .zenv import DEBUG, FOLDER_DEBUG_CONTAINER, PROJECT_DIR, config
+
+USE_SOLR = config("USE_SOLR", default=False, cast=bool)
+SOLR_URL = config("SOLR_URL", default="http://startdev1:startdev1@startdev1-solr:8983")
+HAYSTACK_SIGNAL_PROCESSOR = "backend.haystack.CelerySignalProcessor"
+
+if DEBUG:
+    if FOLDER_DEBUG_CONTAINER != PROJECT_DIR:
+        # HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+        SOLR_URL = SOLR_URL.split("@")
+        SOLR_URL = SOLR_URL[0] + "@localhost:8983"
+
+SOLR_COLLECTIONS = config("SOLR_COLLECTIONS", default="backend_arq1,backend_arq2")
+
+SEARCH_BACKEND = "haystack.backends.solr_backend.SolrEngine"
+HAYSTACK_ROUTERS = ["backend.haystack.DefaultRouter"]
+HAYSTACK_ITERATOR_LOAD_PER_QUERY = 100
+HAYSTACK_CONNECTIONS = {
+    "default": {
+        "ENGINE": SEARCH_BACKEND,
+        "URL": "{}/solr/{}".format(SOLR_URL, SOLR_COLLECTIONS.split(",")[0]),
+        "BATCH_SIZE": 1000,
+        "TIMEOUT": 600,
+        "EXCLUDED_INDEXES": [
+            # 'backend.arq.search_indexes.ArqDocIndex',
+        ],
+    },
+    "backendarq": {
+        "ENGINE": SEARCH_BACKEND,
+        "URL": "{}/solr/{}".format(SOLR_URL, SOLR_COLLECTIONS.split(",")[1]),
+        "BATCH_SIZE": 1000,
+        "TIMEOUT": 600,
+        "EXCLUDED_INDEXES": [
+            # 'backend.search.search_indexes....Index',
+        ],
+    },
+}

@@ -1,0 +1,60 @@
+{% load i18n common_tags%}
+{% for bloco in view.layout_display %}
+  {% if bloco.version == 2 %}
+    {% if forloop.first %}
+      <div class="row">
+    {% endif %}
+
+    {% for colgroup in bloco.colgroups %}
+      <div class="{{colgroup.class_col}}">
+
+        {% for fieldset in colgroup.colfieldsets %}
+          {% if forloop.first %}
+            <h2 class="legend">{{ fieldset.legend }}</h2>
+            <div class="row">
+          {% endif %}
+
+          <div class="{{fieldset.class_col}}">
+            {% for row in fieldset.rows %}
+              <div class="row">
+                {% for column in row %}
+                  {% include "crud/detail_column_widget.html" %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if forloop.last %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    {% if forloop.last %}
+      </div>
+    {% endif %}
+  {% else %}
+    <h2 class="legend">{{ bloco.legend }}</h2>
+    {% for row in bloco.rows %}
+      <div class="row">
+        {% for column in row %}
+          {% include "crud/detail_column_widget.html" %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+
+{% if view.openapi_url %}
+<div class="justify-content-end d-flex pt-5 pr-5">
+  <div class="actions btn-group" role="group">
+    <a href="{{ view.openapi_url }}" class="btn btn-sm btn-info py-0">
+      <small class="text-white">
+        {% trans 'OpenAPI' %}
+      </small>
+    </a>
+  </div>
+</div>
+{% endif %}

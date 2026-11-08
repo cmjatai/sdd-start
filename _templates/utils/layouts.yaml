@@ -1,0 +1,6 @@
+{% load i18n %}
+Teste:
+  {% trans 'Modelo Teste'%}:
+  - id teste teste teste
+  - teste:5 teste teste
+  - teste:3 teste teste

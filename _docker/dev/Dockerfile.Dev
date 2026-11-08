@@ -1,0 +1,28 @@
+FROM leandrojatai/building_foundation:0003
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV ROOT_HOME=/var/project
+ENV HOME=${ROOT_HOME}/backend
+
+RUN mkdir -p ${HOME}/logs/celery
+RUN mkdir -p ${ROOT_HOME}/backend_dev
+RUN mkdir -p ${ROOT_HOME}/backend_media
+
+WORKDIR ${HOME}
+
+#COPY po* /var/backend/backend_dev/poetry.lock
+COPY py* ${ROOT_HOME}/backend_dev/pyproject.toml
+RUN poetry install --no-root -C ${ROOT_HOME}/backend_dev/
+
+ENV DEBIAN_FRONTEND=teletype
+
+EXPOSE 9000/tcp
+
+VOLUME ["${ROOT_HOME}/backend_media", "${HOME}"]
+
+CMD ["/var/project/backend/_docker/dev/start-dev.sh"]

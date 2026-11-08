@@ -1,0 +1,28 @@
+
+{% load i18n %}
+
+{% if menu %}
+<ul class="nav nav-tabs justify-content-end">
+  {% for item in menu %}
+    {% if item.children %}
+      <li class="dropdown {{item.active}}">
+        <a data-toggle="dropdown" href="#linkMenu" title="{{item.title|striptags}}">
+          {% trans item.title %}
+          <span class="caret"></span>
+        </a>
+        <ul class="" role="menu">
+          {% for subitem in item.children %}
+              {% if subitem.url %}
+                <li class="{{subitem.active}}"><a href="{{ subitem.url }}" title="{{subitem.title|striptags}}">{% trans subitem.title %}</a></li>
+              {% endif %}
+          {% endfor %}
+        </ul>
+      </li>
+    {% else %}
+      {% if item.url %}
+        <li><a class="nav-link {{item.active}}" href="{{ item.url }}"  title="{{item.title|striptags}}">{% trans item.title %}</a></li>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endif %}

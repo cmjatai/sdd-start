@@ -78,7 +78,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-__notebooks__private/
 
 # IPython
 profile_default/
@@ -151,7 +150,6 @@ activemq-data/
 *.sage.py
 
 # Environments
-.env
 .envrc
 .venv
 env/
@@ -220,3 +218,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Attention: ignores
+__notebooks__private/
+__private__/
+node_modules/
+.npm/
+.env
+.env_nginx_enable
+security.json
+.eslintcache

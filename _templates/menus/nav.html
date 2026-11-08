@@ -1,0 +1,28 @@
+{% load i18n %}
+{% if menu %}
+
+    {% for item in menu %}
+      {% if item.children %}
+        <li class="dropdown">
+          <a {% if item.url %}href="{{item.url}}"{% endif %} title="{%trans 'Categoria' %}: {{item.title|striptags}}" role="button" aria-haspopup="true" aria-expanded="false" {% if not item.url %}data-toggle="dropdown"{%endif%}>
+            <span title="">{{ item.title|safe }}</span>
+          <span class="caret" title=""></span>
+          </a>
+          <ul class=" menu-left" role="menu">
+            {% with item.children as menu %}
+                {% include "menus/nav.html" %}
+            {% endwith %}
+          </ul>
+        </li>
+      {% else %}
+        {% if item.url %}
+          <li><a href="{{ item.url }}" title="{%trans 'Conteúdo' %}: {{item.title|striptags}}" app="{{item.app}}" model="{{item.model}}" params="{{item.params}}">
+           <span title="">{% trans item.title|safe %}</span></a></li>
+        {% elif not item.url and not item.title%}
+          <li role="separator" class="divider"></li>
+        {% elif not item.url and not item.check_permission%}
+          <li class="dropdown-header">{{item.title|safe}}</li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+{% endif %}

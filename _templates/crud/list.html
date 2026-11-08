@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load i18n crispy_forms_tags common_tags %}
+{% block main_container_class %}main-box{% endblock %}
+
+{% block header_exports %}{% endblock header_exports %}
+
+{% block base_functions %}
+  <div class="d-flex context-actions">
+    {% if form %}
+      <div class="actions search">
+        {% crispy form %}
+      </div>
+    {% endif %}
+    {% block actions %}
+      <div class="actions btn-group btn-group" role="group">
+        {% block more_buttons_left %}{% endblock more_buttons_left %}
+      </div>
+      <div class="actions btn-group btn-group-lg" role="group">
+        {% block more_buttons %}{% endblock more_buttons %}
+        {% if view.create_url %}
+          <a href="{{ view.create_url }}" class="btn btn-outline-primary">
+            {% blocktrans with verbose_name=view.verbose_name %} Adicionar {{ verbose_name }} {% endblocktrans %}
+          </a>
+        {% endif %}
+      </div>
+    {% endblock actions %}
+  </div>
+{% endblock base_functions %}
+
+
+{% block base_content %}
+
+{% block container_table_list %}
+  {% if not rows %}
+    <p class="p-5">{{ NO_ENTRIES_MSG }}</p>
+  {% else %}
+    <div class="row container-table pt-4">
+      <div class="col-12">
+        {% block container-info-table %}
+          <div class="result-count">{% blocktrans with verbose_name_plural=view.verbose_name_plural %}Total de {{ verbose_name_plural }}: <strong>{{count}}</strong>{% endblocktrans %}</div>
+        {% endblock container-info-table %}
+
+        <div class="overflow-hidden w-100">
+          <div class="overflow-auto">
+            <table class="table table-striped table-borderless table-hover">
+              <thead>
+                <tr>
+                  {% for name, ordering in headers %}
+                    <th>
+                      {% if view.ordered_list and ordering %}
+                        <a
+                          title="{% trans 'Clique para alterar a ordem da listagem'%}"
+                          href="?o={% if 'o' not in request.GET and forloop.counter == 1 or 'o' in request.GET and forloop.counter|safe == request.GET.o %}-{% endif %}{{forloop.counter}}{{ordering_url}}"
+
+                          class="ordering {% if 'o' not in request.GET and forloop.counter == 1 or 'o' in request.GET and forloop.counter|safe == request.GET.o %}asc{% elif 'o' in request.GET and forloop.counter == request.GET.o|str2intabs %}desc{% endif %}">
+
+                          {{ name }}
+                      </a>
+                      {% else %}
+                          {{ name }}
+                      {% endif %}
+                    </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody class="table-group-divider">
+                {% for value_list in rows %}
+                  <tr>
+                    {% for value, href, css_class in value_list %}
+                      {% if forloop.first %}
+                      <td class="{{ css_class }}">
+                      {% else %}
+                      <td class="{{ css_class }}">
+                      {% endif %}
+                      {% if href %}
+                        <a href="{{ href }}">{{ value|safe|default:"" }}</a>
+                      {% else %}
+                        {% if value|url %}
+                          <a href="{{ value|safe }}"> {{ value|safe|default:"" }} </a></div>
+                        {% else %}
+                          {{ value|safe|default:"" }}
+                        {% endif %}
+                      {% endif %}
+
+                      {% if forloop.first %}
+                      </td>
+                      {% else %}
+                        </td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+{% endblock container_table_list %}
+{% include "paginacao.html" %}
+
+{% endblock %}
+
+{% block extra_content %} {% endblock %}
+
+{% block extra_js %}
+
+<script>
+
+  // sem jquery
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('id_q');
+    if (input) {
+      input.addEventListener('focus', function() {
+        this.select();
+      });
+      input.focus();
+    }
+
+    // Adiciona o evento de change em id_page_size e seta o valor atual nos cookies independente da url acessada
+    var pageSizeInput = document.getElementById('id_page_size');
+    if (pageSizeInput) {
+      pageSizeInput.addEventListener('change', function() {
+        var pageSize = this.value;
+        document.cookie = "sddstart_page_size=" + pageSize + "; path=/";
+      });
+    }
+
+
+
+  });
+
+
+</script>
+
+{% endblock extra_js %}
+
+
+

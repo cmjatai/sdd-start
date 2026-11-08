@@ -1,0 +1,13 @@
+{% load i18n %}
+
+UserDetail:
+  {% trans 'Usuário' %}:
+  - email:8 is_active
+  - first_name last_name
+  - groups
+  - user_permissions
+
+UserCreate:
+  {% trans 'Usuário' %}:
+  - email first_name last_name is_active
+  - new_password1 new_password2

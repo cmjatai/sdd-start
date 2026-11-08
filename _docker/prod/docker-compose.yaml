@@ -1,0 +1,89 @@
+services:
+  redis:
+    container_name: ${COMPOSE_PROJECT_NAME:-startprod1}-redis
+    image: redis:bookworm
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - redis_data:/data
+    #ports:
+    #  - "6379:6379"
+    networks:
+      - app-net
+  solr:
+    container_name: ${COMPOSE_PROJECT_NAME:-startprod1}-solr
+    image: solr:9.7 # validar mudança para 9.8 pois está causando erro
+    restart: always
+    command: bin/solr start -c -f
+    volumes:
+      - solr9_data:/var/solr
+      - solr9_configsets:/opt/solr/server/solr/configsets
+    #ports:
+    #  - "8983:8983"
+    networks:
+      - app-net
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME:-startprod1}-db
+    image: pgvector/pgvector:0.8.7-pg18-bookworm
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startprod1}
+      POSTGRES_USER: ${POSTGRES_USER:-startprod1}
+      POSTGRES_DB: ${POSTGRES_DB:-startprod1}
+      PGDATA : /var/lib/postgresql/data/
+    volumes:
+      - dbdata:/var/lib/postgresql/data/
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements"]
+    #ports:
+    #  - "5433:5432"
+    networks:
+      - app-net
+  app:
+    build:
+      context: ../../.
+      dockerfile: _docker/prod/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-startprod1}-app
+    user: "root:root"
+    restart: always
+    environment:
+      DEBUG: 'False'
+      USE_SOLR: 'True'
+      SOLR_COLLECTIONS: ${COMPOSE_PROJECT_NAME:-startprod1}_arq1,${COMPOSE_PROJECT_NAME:-startprod1}_arq2
+      SOLR_URL: http://${SOLR_USER:-startprod1}:${SOLR_PASSWORD:-startprod1}@${COMPOSE_PROJECT_NAME:-startprod1}-solr:8983
+      IS_ZK_EMBEDDED: 'True'
+      TZ: America/Sao_Paulo
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-startprod1}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startprod1}
+      POSTGRES_USER: ${POSTGRES_USER:-startprod1}
+      POSTGRES_DB: ${POSTGRES_DB:-startprod1}
+      SITE_URL: ${SITE_URL:-http://localhost:${APP_PORT:-9001}}
+    volumes:
+      - data:/var/project/backend_data
+      - media:/var/project/backend_media
+      - logs:/var/project/backend/logs
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      solr:
+        condition: service_started
+    ports:
+      - "${APP_PORT:-9001}:80"
+    networks:
+      - app-net
+networks:
+  app-net:
+    driver: bridge
+volumes:
+  dbdata:
+  data:
+  media:
+  logs:
+  solr9_data:
+  solr9_configsets:
+  redis_data:

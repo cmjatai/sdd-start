@@ -1,0 +1,42 @@
+{% load i18n %}
+{% if menu %}
+    {% for item in menu %}
+      {% if item.children %}
+        <li class="{{item.active}} {{item.css_class_li}}">
+
+          {% if item.url %}
+            <a class="{{item.css_class_a}}" href="{{item.url}}" title="{{item.title|striptags}}">
+              {% if item.css_class_icon %}<i class="{{ item.css_class_icon }}"></i>{% endif %}
+              <span class="{{item.css_class_span}}">{{ item.title|safe }}</span>
+            </a>
+          {% else %}
+            <span class="{{item.css_class_a}}">
+              {% if item.css_class_icon %}<i class="{{ item.css_class_icon }}"></i>{% endif %}
+              <span class="{{item.css_class_span}}">{{ item.title|safe }}</span>
+            </span>
+          {% endif %}
+          <ul class="{{item.css_class_ul}}">
+            {% with item.children as menu %}
+              {% include "menus/menu.html" %}
+            {% endwith %}
+          </ul>
+        </li>
+      {% elif not item.url and not item.title%}
+          <li role="separator" class="divider"></li>
+      {% else %}
+        <li class="{{item.active}} {{item.css_class_li}}">
+          {% if item.url %}
+            <a class="{{item.css_class_a}}" href="{{item.url}}" title="{{item.title|striptags}}">
+              {% if item.css_class_icon %}<i class="{{ item.css_class_icon }}"></i>{% endif %}
+              <span class="{{item.css_class_span}}">{{ item.title|safe }}</span>
+            </a>
+          {% else %}
+            <span class="{{item.css_class_a}}">
+              {% if item.css_class_icon %}<i class="{{ item.css_class_icon }}"></i>{% endif %}
+              <span class="{{item.css_class_span}}">{{ item.title|safe }}</span>
+            </span>
+          {% endif %}
+        </li>
+      {% endif %}
+    {% endfor %}
+{% endif %}

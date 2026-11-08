@@ -1,0 +1,89 @@
+services:
+  redis:
+    image: redis:bookworm
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-redis
+    restart: on-failure
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - appdev-net
+  solr:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-solr
+    image: solr:9.7 # validar mudança para 9.8 pois está causando erro
+    restart: on-failure
+    command: bin/solr start -c -f
+    volumes:
+      - solr9_data:/var/solr
+      - solr9_configsets:/opt/solr/server/solr/configsets
+    ports:
+      - "8983:8983"
+      - "9983:9983"
+    networks:
+      - appdev-net
+  front:
+    build:
+      context: ../../.
+      dockerfile: _docker/dev/Dockerfile.Dev.Front
+    restart: on-failure
+    volumes:
+      - ../../.:/var/project/backend
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-front
+    networks:
+      - appdev-net
+    ports:
+      - "5173:5173"
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-db
+    image: pgvector/pgvector:0.8.7-pg18-bookworm
+    restart: on-failure
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startdev1}
+      POSTGRES_USER: ${POSTGRES_USER:-startdev1}
+      POSTGRES_DB: ${POSTGRES_DB:-startdev1}
+      PGDATA: /var/lib/postgresql/data/
+    volumes:
+      - dbdata:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
+    networks:
+      - appdev-net
+  appdev:
+    container_name: ${COMPOSE_PROJECT_NAME:-startdev1}-appdev
+    build:
+      context: ../../.
+      dockerfile: _docker/dev/Dockerfile.Dev
+    restart: on-failure
+    environment:
+      DEBUG: 'True'
+      USE_SOLR: 'True'
+      SOLR_COLLECTIONS: ${COMPOSE_PROJECT_NAME:-startdev1}_arq1,${COMPOSE_PROJECT_NAME:-startdev1}_arq2
+      SOLR_URL: http://${SOLR_USER:-startdev1}:${SOLR_PASSWORD:-startdev1}@${COMPOSE_PROJECT_NAME:-startdev1}-solr:8983
+      IS_ZK_EMBEDDED: 'True'
+      TZ: America/Sao_Paulo
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-startdev1}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-startdev1}
+      POSTGRES_USER: ${POSTGRES_USER:-startdev1}
+      POSTGRES_DB: ${POSTGRES_DB:-startdev1}
+    volumes:
+      - /mnt/volumes/backend_media:/var/project/backend_media
+      - ../../.:/var/project/backend
+    depends_on:
+      - front
+      - db
+      - redis
+      - solr
+    ports:
+      - "${APP_PORT:-9099}:9000"
+    networks:
+      - appdev-net
+networks:
+  appdev-net:
+    driver: bridge
+
+volumes:
+  solr9_data:
+  solr9_configsets:
+  redis_data:
+  dbdata:

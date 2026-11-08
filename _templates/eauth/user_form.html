@@ -1,0 +1,23 @@
+{% extends "crud/form.html" %}
+{% load i18n %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+    document.getElementById("renovar-token").addEventListener('click', () => {
+      fetch("{% url 'backend.api:recria_token' object.id %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("id_token").value = data.token;
+      });
+    });
+  });
+</script>
+{% endblock %}
