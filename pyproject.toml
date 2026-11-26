@@ -75,7 +75,7 @@ isort = "^9.0.2"
 pytest = "^9.2.0"
 pytest-cov = "^7.1.0"
 pytest-django = "^4.14.0"
-model-bakery = "^1.24.2"
+model-bakery = "^1.25.0"
 django-webtest = "^1.9.15"
 
 [tool.poetry.group.docs.dependencies]
